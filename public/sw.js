@@ -1,34 +1,19 @@
-const CACHE = 'hobbyswap-cache-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/logo.svg'];
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))
-      )
-    )
-  );
-});
+    (async () => {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map((key) => caches.delete(key)));
+      await self.clients.claim();
+      await self.registration.unregister();
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match('/'));
-    })
+      const windowClients = await self.clients.matchAll({ type: 'window' });
+      await Promise.all(
+        windowClients.map((client) => client.navigate(client.url).catch(() => undefined))
+      );
+    })()
   );
 });
