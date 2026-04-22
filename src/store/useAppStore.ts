@@ -1,19 +1,20 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { seedData } from '@/data/seed';
-import { encryptMessage } from '@/services/encryption';
 import { buildQuickMatches } from '@/services/matchmaking';
 import {
   AccessibilitySettings,
   AgeGroup,
   AppData,
+  CreditLedgerEntry,
   FormatPreference,
   HobbyProfile,
-  ListingCondition,
+  ListingIntent,
   NotificationPreferences,
+  PaymentMethod,
+  PriceMode,
   ReportCategory,
   SubjectType,
-  TaskLane,
   Toast,
   User
 } from '@/types/models';
@@ -36,48 +37,45 @@ type OnboardingPayload = {
   anonymousMode: boolean;
 };
 
-type ListingPayload = {
+type CreateListingPayload = {
   title: string;
   description: string;
-  category: string;
   hobbyId: string;
+  intent: ListingIntent;
+  level: 'Beginner' | 'Learning' | 'Comfortable' | 'Can Teach';
+  format: FormatPreference;
+  priceMode: PriceMode;
+  creditPrice: number | null;
+  cashPricePhp: number | null;
+  availability: string[];
   photoUrl: string;
-  condition: ListingCondition;
-  swapPreference: string;
-  pricePhp: number | null;
-  location: { barangay: string; city: string; lat: number; lng: number };
-  availability: string;
-  mode: 'swap' | 'sale' | 'both';
 };
 
-type ContractPayload = {
+type CreateSwapPayload = {
   partnerId: string;
   teachSkill: string;
   learnSkill: string;
   sessions: number;
   durationMinutes: number;
   format: FormatPreference;
-  meetingPoint: string;
-  videoLink?: string;
-  notes: string;
+  availabilityGrid: string[];
+  locationLabel: string;
+  equalSwap: boolean;
+  creditAmount: number;
+  note: string;
 };
 
-type EventPayload = {
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  format: FormatPreference;
-  requiredSkill: 'Beginner' | 'Learning' | 'Comfortable' | 'Can Teach';
-  capacity: number;
-  location: { barangay: string; city: string; lat: number; lng: number };
+type BookSessionPayload = {
+  listingId: string;
+  paymentMethod: PaymentMethod;
+  scheduleLabel: string;
+  note: string;
 };
 
-type ProjectPayload = {
-  title: string;
-  description: string;
-  hobbyId: string;
-  collaboratorIds: string[];
+type ReviewPayload = {
+  contractId: string;
+  rating: number;
+  body: string;
 };
 
 type ReportPayload = {
@@ -87,14 +85,12 @@ type ReportPayload = {
   details: string;
 };
 
-type VideoPayload = {
+type ResourcePayload = {
   title: string;
-  url: string;
-  thumbnail: string;
+  description: string;
   hobbyId: string;
-  skillLevel: 'Beginner' | 'Learning' | 'Comfortable' | 'Can Teach';
-  format: FormatPreference;
-  durationSeconds: number;
+  availabilityWindow: string;
+  damagePolicy: string;
 };
 
 interface AppState extends AppData {
@@ -111,54 +107,23 @@ interface AppState extends AppData {
   updateNotificationPrefs: (patch: Partial<NotificationPreferences>) => void;
   updateAccessibility: (patch: Partial<AccessibilitySettings>) => void;
   togglePremium: () => void;
-  toggleWishlist: (listingId: string) => void;
-  createListing: (payload: ListingPayload) => void;
-  submitOffer: (listingId: string, offeredItem: string, note: string) => void;
-  decideOffer: (listingId: string, offerId: string, status: 'accepted' | 'declined') => void;
-  purchaseListing: (listingId: string) => void;
-  rateTransaction: (transactionId: string, rating: number) => void;
-  createContract: (payload: ContractPayload) => void;
-  confirmContract: (contractId: string) => void;
-  markSessionComplete: (contractId: string, sessionId: string) => void;
-  updateContractStatus: (
-    contractId: string,
-    status: 'completed' | 'disputed' | 'cancelled',
-    note: string
-  ) => void;
-  reserveResource: (resourceId: string, acceptPolicy: boolean) => void;
-  returnResource: (resourceId: string) => void;
+  requestVerification: (type: 'phone' | 'local-id') => void;
+  saveListingForLater: (listingId: string, note?: string) => void;
+  createListing: (payload: CreateListingPayload) => void;
+  createSwapAgreement: (payload: CreateSwapPayload) => void;
+  bookSession: (payload: BookSessionPayload) => void;
+  markAgreementDone: (contractId: string) => void;
+  leaveAgreementReview: (payload: ReviewPayload) => void;
   joinChallenge: (challengeId: string) => void;
-  submitChallengeEntry: (
-    challengeId: string,
-    mediaType: 'photo' | 'video' | 'text',
-    caption: string,
-    mediaUrl?: string,
-    partnerId?: string
-  ) => void;
-  voteChallengeEntry: (challengeId: string, entryId: string) => void;
-  rsvpEvent: (eventId: string) => void;
-  hostEvent: (payload: EventPayload) => void;
-  checkInEvent: (eventId: string) => void;
-  saveEventRecap: (eventId: string, recap: string) => void;
+  advanceChallenge: (challengeId: string) => void;
+  addResourceItem: (payload: ResourcePayload) => void;
   startConversation: (partnerId: string, contractId?: string) => string;
-  requestMessageConsent: (threadId: string) => void;
-  grantMessageConsent: (threadId: string) => void;
-  sendMessage: (threadId: string, body: string, quickBoundary?: boolean) => Promise<void>;
+  sendMessage: (threadId: string, body: string, quickBoundary?: boolean) => void;
   muteThread: (threadId: string) => void;
   blockUser: (userId: string) => void;
+  createReport: (payload: ReportPayload) => void;
   markNotificationRead: (notificationId: string) => void;
   clearAllNotifications: () => void;
-  createReport: (payload: ReportPayload) => void;
-  quickMatch: () => void;
-  startMentorship: (mentorId: string, hobbyId: string) => void;
-  createProject: (payload: ProjectPayload) => void;
-  addProjectTask: (projectId: string, title: string) => void;
-  moveProjectTask: (projectId: string, taskId: string, lane: TaskLane) => void;
-  addProjectFile: (projectId: string, name: string, url: string) => void;
-  markProjectCelebrationSeen: (projectId: string) => void;
-  createVideoPost: (payload: VideoPayload) => void;
-  addVideoComment: (videoId: string, body: string) => void;
-  requestVerification: (type: 'phone' | 'local-id') => void;
   dismissToast: (toastId: string) => void;
   deleteAccount: () => void;
   resetDemoData: () => void;
@@ -169,7 +134,7 @@ function cloneSeed(): AppData {
 }
 
 function toast(message: string, tone: Toast['tone'] = 'success'): Toast {
-  return { id: createId('toast'), message, tone };
+  return { id: createId('toast'), tone, message };
 }
 
 function notification(
@@ -199,6 +164,54 @@ function updateUser(users: User[], userId: string, updater: (user: User) => User
   return users.map((user) => (user.id === userId ? updater(user) : user));
 }
 
+function addToast(state: AppState, message: string, tone: Toast['tone'] = 'success') {
+  return [toast(message, tone), ...state.toasts].slice(0, 4);
+}
+
+function nextIso(days: number, hour = 10) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setHours(hour, 0, 0, 0);
+  return date.toISOString();
+}
+
+function sessionTemplate(count: number, durationMinutes: number, startDay = 3) {
+  return Array.from({ length: count }, (_, index) => ({
+    id: createId('session'),
+    label: `Session ${index + 1}`,
+    date: nextIso(startDay + index * 7),
+    durationMinutes,
+    status: 'scheduled' as const
+  }));
+}
+
+function releaseHeldCredits(
+  users: User[],
+  creditLedger: CreditLedgerEntry[],
+  teacherId: string,
+  agreementId: string
+) {
+  const heldAmount = creditLedger
+    .filter(
+      (entry) =>
+        entry.userId === teacherId &&
+        entry.agreementId === agreementId &&
+        entry.status === 'held'
+    )
+    .reduce((sum, entry) => sum + entry.delta, 0);
+
+  return {
+    users: updateUser(users, teacherId, (user) => ({
+      ...user,
+      creditBalance: user.creditBalance + heldAmount,
+      pendingCredits: Math.max(0, user.pendingCredits - heldAmount)
+    })),
+    creditLedger: creditLedger.map((entry) =>
+      entry.agreementId === agreementId ? { ...entry, status: 'posted' as const } : entry
+    )
+  };
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -206,25 +219,26 @@ export const useAppStore = create<AppState>()(
       currentUserId: null,
       toasts: [],
       login: (identifier, password) => {
-        const value = identifier.trim().toLowerCase();
+        const normalized = identifier.trim().toLowerCase();
         const user = get().users.find(
           (entry) =>
-            (entry.email.toLowerCase() === value || entry.phone === identifier.trim()) &&
+            (entry.email.toLowerCase() === normalized || entry.phone === identifier.trim()) &&
             entry.password === password
         );
 
         if (!user) {
           set((state) => ({
-            toasts: [toast('We could not match that login. Try the demo account or sign up.', 'error'), ...state.toasts]
+            toasts: addToast(state, 'We could not match that login. Try the demo account or sign up.', 'error')
           }));
           return { ok: false, message: 'Invalid credentials.' };
         }
 
         set((state) => ({
           currentUserId: user.id,
-          toasts: [toast(`Welcome back, ${user.displayName}.`), ...state.toasts]
+          toasts: addToast(state, `Welcome back, ${user.displayName}.`)
         }));
-        return { ok: true, message: user.onboardingComplete ? 'Welcome back.' : 'Continue onboarding.' };
+
+        return { ok: true, message: 'Logged in.' };
       },
       loginWithProvider: (provider) => {
         const email = provider === 'Google' ? 'google.friend@hobbyswap.app' : 'facebook.friend@hobbyswap.app';
@@ -233,7 +247,7 @@ export const useAppStore = create<AppState>()(
         if (existing) {
           set((state) => ({
             currentUserId: existing.id,
-            toasts: [toast(`Signed in with ${provider}.`), ...state.toasts]
+            toasts: addToast(state, `Signed in with ${provider}.`)
           }));
           return { ok: true, message: 'Signed in.' };
         }
@@ -249,12 +263,12 @@ export const useAppStore = create<AppState>()(
           password: 'SocialLogin9',
           location: { barangay: 'Poblacion', city: 'Makati', lat: 14.5656, lng: 121.0292 },
           ageGroup: '25-34',
-          bio: 'Just joined through social sign-in.',
-          avatar: provider === 'Google' ? '#ef8b5a' : '#4f6ddf',
+          bio: 'New here and looking for gentle ways into local hobbies.',
+          avatar: provider === 'Google' ? '#ef8b5a' : '#5a73c8',
           hobbyProfiles: [],
           availability: [],
           preferredFormats: ['Hybrid'],
-          anonymousMode: true,
+          anonymousMode: false,
           onboardingComplete: false,
           guideCompleted: false,
           trustScore: 60,
@@ -264,7 +278,8 @@ export const useAppStore = create<AppState>()(
           privacy: {
             visibility: 'Matches Only',
             showRealName: false,
-            showExactLocation: false
+            showExactLocation: false,
+            showOnMap: true
           },
           notificationPreferences: {
             swapRequests: true,
@@ -281,14 +296,20 @@ export const useAppStore = create<AppState>()(
             reduceMotion: false
           },
           blockedUserIds: [],
-          mutedThreadIds: []
+          mutedThreadIds: [],
+          creditBalance: 40,
+          pendingCredits: 0,
+          payoutMethod: 'GCash',
+          nextPayoutDate: nextIso(7),
+          savedListingIds: []
         };
 
         set((state) => ({
           users: [newUser, ...state.users],
           currentUserId: userId,
-          toasts: [toast(`Signed in with ${provider}.`), ...state.toasts]
+          toasts: addToast(state, `Signed in with ${provider}.`)
         }));
+
         return { ok: true, message: 'Continue onboarding.' };
       },
       signUp: (payload) => {
@@ -301,7 +322,7 @@ export const useAppStore = create<AppState>()(
 
         if (exists) {
           set((state) => ({
-            toasts: [toast('That email or phone is already connected to an account.', 'error'), ...state.toasts]
+            toasts: addToast(state, 'That email or phone is already connected to an account.', 'error')
           }));
           return { ok: false, message: 'Account already exists.' };
         }
@@ -323,22 +344,23 @@ export const useAppStore = create<AppState>()(
             lng: 121.0292
           },
           ageGroup: payload.ageGroup,
-          bio: 'New to HobbySwap and open to warm, beginner-friendly exchanges.',
+          bio: 'New to HobbySwap and open to swaps, workshops, and gentle skill-sharing.',
           avatar: '#103b39',
           hobbyProfiles: [],
           availability: [],
           preferredFormats: ['Hybrid'],
-          anonymousMode: true,
+          anonymousMode: false,
           onboardingComplete: false,
           guideCompleted: false,
-          trustScore: 55,
+          trustScore: 58,
           premium: false,
           verifiedPhone: !isEmail,
           verifiedLocalId: false,
           privacy: {
             visibility: 'Matches Only',
             showRealName: false,
-            showExactLocation: false
+            showExactLocation: false,
+            showOnMap: true
           },
           notificationPreferences: {
             swapRequests: true,
@@ -355,7 +377,12 @@ export const useAppStore = create<AppState>()(
             reduceMotion: false
           },
           blockedUserIds: [],
-          mutedThreadIds: []
+          mutedThreadIds: [],
+          creditBalance: 35,
+          pendingCredits: 0,
+          payoutMethod: 'GCash',
+          nextPayoutDate: nextIso(7),
+          savedListingIds: []
         };
 
         set((state) => ({
@@ -364,14 +391,14 @@ export const useAppStore = create<AppState>()(
           notifications: [
             notification(
               userId,
-              'safety',
-              'Welcome to HobbySwap',
-              'Your profile starts in privacy-first mode until you decide otherwise.',
-              '/app/guide'
+              'credits',
+              'You start with 35 welcome credits',
+              'Use them for your first session if you do not have a direct skill swap ready yet.',
+              '/app/home'
             ),
             ...state.notifications
           ],
-          toasts: [toast('Account created. Let’s tailor your first week.'), ...state.toasts]
+          toasts: addToast(state, 'Account created. Let’s tailor your first week.')
         }));
 
         return { ok: true, message: 'Continue onboarding.' };
@@ -403,7 +430,7 @@ export const useAppStore = create<AppState>()(
             state.users,
             state.hobbies
           ),
-          toasts: [toast('Your dashboard is ready.'), ...state.toasts]
+          toasts: addToast(state, 'Your dashboard is ready.')
         }));
       },
       completeGuide: () => {
@@ -425,12 +452,13 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
             ...patch
           })),
-          toasts: [toast('Profile updated.'), ...state.toasts]
+          toasts: addToast(state, 'Profile updated.')
         }));
       },
       updatePrivacy: (patch) => {
@@ -444,7 +472,7 @@ export const useAppStore = create<AppState>()(
             ...user,
             privacy: { ...user.privacy, ...patch }
           })),
-          toasts: [toast('Privacy settings saved.'), ...state.toasts]
+          toasts: addToast(state, 'Privacy settings saved.')
         }));
       },
       updateNotificationPrefs: (patch) => {
@@ -461,7 +489,7 @@ export const useAppStore = create<AppState>()(
               ...patch
             }
           })),
-          toasts: [toast('Notification preferences updated.'), ...state.toasts]
+          toasts: addToast(state, 'Notification preferences updated.')
         }));
       },
       updateAccessibility: (patch) => {
@@ -473,9 +501,12 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
-            accessibility: { ...user.accessibility, ...patch }
+            accessibility: {
+              ...user.accessibility,
+              ...patch
+            }
           })),
-          toasts: [toast('Accessibility preferences updated.'), ...state.toasts]
+          toasts: addToast(state, 'Accessibility preferences updated.')
         }));
       },
       togglePremium: () => {
@@ -483,31 +514,54 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
             premium: !user.premium
           })),
-          toasts: [toast(currentUser.premium ? 'Premium paused.' : 'Premium enabled.'), ...state.toasts]
+          toasts: addToast(state, currentUser.premium ? 'Premium paused.' : 'Premium enabled.')
         }));
       },
-      toggleWishlist: (listingId) => {
+      requestVerification: (type) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
+          users: updateUser(state.users, currentUser.id, (user) => ({
+            ...user,
+            verifiedPhone: type === 'phone' ? true : user.verifiedPhone,
+            verifiedLocalId: type === 'local-id' ? true : user.verifiedLocalId
+          })),
+          toasts: addToast(state, type === 'phone' ? 'Phone verified.' : 'Local ID verified.')
+        }));
+      },
+      saveListingForLater: (listingId) => {
+        const currentUser = currentUserFrom(get());
+        if (!currentUser) {
+          return;
+        }
+
+        set((state) => ({
+          users: updateUser(state.users, currentUser.id, (user) => ({
+            ...user,
+            savedListingIds: user.savedListingIds.includes(listingId)
+              ? user.savedListingIds
+              : [...user.savedListingIds, listingId]
+          })),
           listings: state.listings.map((listing) =>
             listing.id === listingId
               ? {
                   ...listing,
                   savedBy: listing.savedBy.includes(currentUser.id)
-                    ? listing.savedBy.filter((id) => id !== currentUser.id)
+                    ? listing.savedBy
                     : [...listing.savedBy, currentUser.id]
                 }
               : listing
           ),
-          toasts: [toast('Saved list updated.'), ...state.toasts]
+          toasts: addToast(state, 'Saved to your shortlist.')
         }));
       },
       createListing: (payload) => {
@@ -523,207 +577,71 @@ export const useAppStore = create<AppState>()(
               ownerId: currentUser.id,
               title: payload.title,
               description: payload.description,
-              category: payload.category,
+              category: payload.intent === 'workshop' ? 'Workshop' : 'Teacher Listing',
               hobbyId: payload.hobbyId,
-              photos: [payload.photoUrl],
-              condition: payload.condition,
-              swapPreference: payload.swapPreference,
-              pricePhp: payload.pricePhp,
-              location: payload.location,
+              photos: [
+                payload.photoUrl ||
+                  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80'
+              ],
+              condition: 'Good',
+              location: currentUser.location,
               availability: payload.availability,
-              mode: payload.mode,
+              format: payload.format,
+              level: payload.level,
+              intent: payload.intent,
+              priceMode: payload.priceMode,
+              creditPrice: payload.creditPrice,
+              cashPricePhp: payload.cashPricePhp,
               savedBy: [],
               offers: [],
               status: 'active',
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              ratingAverage: 5,
+              completedSessions: 0
             },
             ...state.listings
           ],
-          toasts: [toast('Listing published.'), ...state.toasts]
+          toasts: addToast(state, 'Listing published.')
         }));
       },
-      submitOffer: (listingId, offeredItem, note) => {
+      createSwapAgreement: (payload) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
-        set((state) => {
-          const listing = state.listings.find((entry) => entry.id === listingId);
-          if (!listing) {
-            return state;
-          }
 
-          return {
-            listings: state.listings.map((entry) =>
-              entry.id === listingId
-                ? {
-                    ...entry,
-                    offers: [
-                      {
-                        id: createId('offer'),
-                        fromUserId: currentUser.id,
-                        offeredItem,
-                        note,
-                        status: 'pending',
-                        createdAt: new Date().toISOString()
-                      },
-                      ...entry.offers
-                    ]
-                  }
-                : entry
-            ),
-            notifications: [
-              notification(
-                listing.ownerId,
-                'swap-request',
-                'New swap offer',
-                `${currentUser.displayName} sent an offer for ${listing.title}.`,
-                '/app/swap'
-              ),
-              ...state.notifications
-            ],
-            toasts: [toast('Swap offer sent.'), ...state.toasts]
-          };
-        });
-      },
-      decideOffer: (listingId, offerId, status) => {
-        set((state) => {
-          const listing = state.listings.find((entry) => entry.id === listingId);
-          const offer = listing?.offers.find((entry) => entry.id === offerId);
-          if (!listing || !offer) {
-            return state;
-          }
-
-          const txn =
-            status === 'accepted'
-              ? {
-                  id: createId('txn'),
-                  listingId: listing.id,
-                  buyerId: offer.fromUserId,
-                  sellerId: listing.ownerId,
-                  type: 'swap' as const,
-                  amountPhp: listing.pricePhp ?? 0,
-                  status: 'completed' as const,
-                  createdAt: new Date().toISOString()
-                }
-              : null;
-
-          return {
-            listings: state.listings.map((entry) =>
-              entry.id === listingId
-                ? {
-                    ...entry,
-                    status: status === 'accepted' ? 'completed' : entry.status,
-                    offers: entry.offers.map((item) =>
-                      item.id === offerId ? { ...item, status } : item
-                    )
-                  }
-                : entry
-            ),
-            transactions: txn ? [txn, ...state.transactions] : state.transactions,
-            notifications: [
-              notification(
-                offer.fromUserId,
-                'swap-request',
-                status === 'accepted' ? 'Offer accepted' : 'Offer declined',
-                `${listing.title} was ${status}.`,
-                '/app/swap'
-              ),
-              ...state.notifications
-            ],
-            toasts: [toast(`Offer ${status}.`), ...state.toasts]
-          };
-        });
-      },
-      purchaseListing: (listingId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => {
-          const listing = state.listings.find((entry) => entry.id === listingId);
-          if (!listing) {
-            return state;
-          }
-
-          return {
-            listings: state.listings.map((entry) =>
-              entry.id === listingId ? { ...entry, status: 'completed' } : entry
-            ),
-            transactions: [
-              {
-                id: createId('txn'),
-                listingId: listing.id,
-                buyerId: currentUser.id,
-                sellerId: listing.ownerId,
-                type: 'sale',
-                amountPhp: listing.pricePhp ?? 0,
-                status: 'completed',
-                createdAt: new Date().toISOString()
-              },
-              ...state.transactions
-            ],
-            notifications: [
-              notification(
-                currentUser.id,
-                'swap-request',
-                'Purchase complete',
-                `You checked out ${listing.title}.`,
-                '/app/swap'
-              ),
-              ...state.notifications
-            ],
-            toasts: [toast('Checkout complete.'), ...state.toasts]
-          };
-        });
-      },
-      rateTransaction: (transactionId, rating) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          transactions: state.transactions.map((transaction) =>
-            transaction.id === transactionId
-              ? transaction.buyerId === currentUser.id
-                ? { ...transaction, ratingByBuyer: rating }
-                : { ...transaction, ratingBySeller: rating }
-              : transaction
-          ),
-          toasts: [toast('Thanks for leaving a community rating.'), ...state.toasts]
-        }));
-      },
-      createContract: (payload) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
         const contractId = createId('contract');
+        const records = sessionTemplate(payload.sessions, payload.durationMinutes);
 
         set((state) => ({
           contracts: [
             {
               id: contractId,
-              initiatorId: currentUser.id,
-              partnerId: payload.partnerId,
+              title: `${payload.teachSkill} ↔ ${payload.learnSkill}`,
+              type: payload.equalSwap ? 'equal-swap' : 'credit-booking',
+              intent: 'swap',
+              hobbyId: currentUser.hobbyProfiles[0]?.hobbyId ?? state.hobbies[0].id,
+              teacherId: currentUser.id,
+              learnerId: payload.partnerId,
               teachSkill: payload.teachSkill,
               learnSkill: payload.learnSkill,
               sessions: payload.sessions,
               durationMinutes: payload.durationMinutes,
               format: payload.format,
-              meetingPoint: payload.meetingPoint,
-              videoLink: payload.videoLink,
-              notes: [payload.notes],
-              milestones: ['Shared terms'],
-              status: 'pending',
-              confirmedBy: [currentUser.id],
-              sessionRecords: Array.from({ length: payload.sessions }, (_, index) => ({
-                id: createId('session'),
-                label: `Session ${index + 1}`,
-                date: new Date(Date.now() + (index + 1) * 604800000).toISOString(),
-                durationMinutes: payload.durationMinutes,
-                status: 'scheduled'
-              })),
+              locationLabel: payload.locationLabel,
+              availabilityGrid: payload.availabilityGrid,
+              note: payload.equalSwap
+                ? `${payload.note} Equal swap — no credits needed.`
+                : `${payload.note} Credit-based swap — ${payload.creditAmount} credits.`,
+              creditAmount: payload.equalSwap ? 0 : payload.creditAmount,
+              cashAmountPhp: 0,
+              platformFeePhp: 0,
+              teacherNetPhp: 0,
+              isEqualSwap: payload.equalSwap,
+              status: 'active',
+              confirmedBy: [currentUser.id, payload.partnerId],
+              reviewLeftBy: [],
+              sessionRecords: records,
               createdAt: new Date().toISOString()
             },
             ...state.contracts
@@ -732,127 +650,349 @@ export const useAppStore = create<AppState>()(
             notification(
               payload.partnerId,
               'contract',
-              'New swap contract request',
-              `${currentUser.displayName} sent a consent-first swap agreement.`,
-              '/app/contracts'
+              'New swap agreement ready',
+              payload.equalSwap
+                ? 'This swap is clearly labeled as equal, so no credits are needed.'
+                : 'A credit-based swap agreement is ready for review.',
+              '/app/log'
             ),
             ...state.notifications
           ],
-          toasts: [toast('Contract request sent.'), ...state.toasts]
+          toasts: addToast(state, 'Swap agreement created.')
         }));
       },
-      confirmContract: (contractId) => {
+      bookSession: (payload) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
-        set((state) => ({
-          contracts: state.contracts.map((contract) =>
-            contract.id === contractId
-              ? {
-                  ...contract,
-                  confirmedBy: Array.from(new Set([...contract.confirmedBy, currentUser.id])),
-                  status:
-                    Array.from(new Set([...contract.confirmedBy, currentUser.id])).length >= 2
-                      ? 'active'
-                      : 'pending'
-                }
-              : contract
-          ),
-          toasts: [toast('Contract confirmed.'), ...state.toasts]
-        }));
+
+        const listing = get().listings.find((entry) => entry.id === payload.listingId);
+        if (!listing) {
+          return;
+        }
+
+        const contractId = createId('contract');
+        const teacherId = listing.ownerId;
+        const creditAmount = payload.paymentMethod === 'Credits' ? listing.creditPrice ?? 0 : 0;
+        const cashAmountPhp = payload.paymentMethod === 'Credits' ? 0 : listing.cashPricePhp ?? 0;
+        const platformFeePhp = cashAmountPhp > 0 ? Number((cashAmountPhp * 0.09).toFixed(2)) : 0;
+        const teacherNetPhp = Number((cashAmountPhp - platformFeePhp).toFixed(2));
+        const record = [
+          {
+            id: createId('session'),
+            label: payload.scheduleLabel || 'Scheduled session',
+            date: nextIso(4),
+            durationMinutes: 75,
+            status: 'scheduled' as const
+          }
+        ];
+
+        set((state) => {
+          let nextUsers = state.users;
+          let nextLedger = state.creditLedger;
+          let nextCashPayouts = state.cashPayouts;
+
+          if (creditAmount > 0) {
+            nextUsers = updateUser(nextUsers, currentUser.id, (user) => ({
+              ...user,
+              creditBalance: user.creditBalance - creditAmount
+            }));
+            nextUsers = updateUser(nextUsers, teacherId, (user) => ({
+              ...user,
+              pendingCredits: user.pendingCredits + creditAmount
+            }));
+            nextLedger = [
+              {
+                id: createId('ledger'),
+                userId: currentUser.id,
+                delta: -creditAmount,
+                title: listing.title,
+                sessionType: listing.intent === 'workshop' ? 'workshop' : 'learning',
+                createdAt: new Date().toISOString(),
+                status: 'held',
+                agreementId: contractId
+              },
+              {
+                id: createId('ledger'),
+                userId: teacherId,
+                delta: creditAmount,
+                title: listing.title,
+                sessionType: 'teaching',
+                createdAt: new Date().toISOString(),
+                status: 'held',
+                agreementId: contractId
+              },
+              ...nextLedger
+            ];
+          }
+
+          if (cashAmountPhp > 0) {
+            nextCashPayouts = [
+              {
+                id: createId('cash'),
+                userId: teacherId,
+                title: listing.title,
+                grossPhp: cashAmountPhp,
+                feePhp: platformFeePhp,
+                netPhp: teacherNetPhp,
+                createdAt: new Date().toISOString(),
+                payoutDate: nextIso(5, 9),
+                payoutMethod:
+                  state.users.find((user) => user.id === teacherId)?.payoutMethod ?? 'GCash',
+                status: 'held',
+                agreementId: contractId
+              },
+              ...nextCashPayouts
+            ];
+          }
+
+          return {
+            users: nextUsers,
+            creditLedger: nextLedger,
+            cashPayouts: nextCashPayouts,
+            contracts: [
+              {
+                id: contractId,
+                title: listing.title,
+                type:
+                  listing.intent === 'workshop'
+                    ? payload.paymentMethod === 'Credits'
+                      ? 'workshop'
+                      : 'cash-booking'
+                    : payload.paymentMethod === 'Credits'
+                      ? 'credit-booking'
+                      : 'cash-booking',
+                intent: listing.intent,
+                hobbyId: listing.hobbyId,
+                teacherId,
+                learnerId: currentUser.id,
+                teachSkill: listing.title,
+                sessions: 1,
+                durationMinutes: 75,
+                format: listing.format,
+                locationLabel: `${listing.location.barangay}, ${listing.location.city}`,
+                availabilityGrid: listing.availability,
+                note: payload.note,
+                paymentMethod: payload.paymentMethod,
+                creditAmount,
+                cashAmountPhp,
+                platformFeePhp,
+                teacherNetPhp,
+                isEqualSwap: false,
+                status: 'active',
+                confirmedBy: [currentUser.id, teacherId],
+                reviewLeftBy: [],
+                sessionRecords: record,
+                createdAt: new Date().toISOString(),
+                listingId: listing.id
+              },
+              ...state.contracts
+            ],
+            notifications: [
+              notification(
+                teacherId,
+                'contract',
+                'New booking confirmed',
+                payload.paymentMethod === 'Credits'
+                  ? `${currentUser.displayName} booked ${listing.title} with credits held in escrow.`
+                  : `${currentUser.displayName} booked ${listing.title}. Cash is being held in escrow.`,
+                '/app/log'
+              ),
+              notification(
+                currentUser.id,
+                'credits',
+                payload.paymentMethod === 'Credits' ? 'Credits held in escrow' : 'Booking confirmed',
+                payload.paymentMethod === 'Credits'
+                  ? `${creditAmount} credits are being held until the session is confirmed complete.`
+                  : `You paid ${cashAmountPhp} PHP. The teacher receives ${teacherNetPhp} PHP after the 9% platform fee.`,
+                '/app/log'
+              ),
+              ...state.notifications
+            ],
+            toasts: addToast(state, 'Booking confirmed. Review the breakdown in Swap Log.')
+          };
+        });
       },
-      markSessionComplete: (contractId, sessionId) => {
+      markAgreementDone: (contractId) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
-        set((state) => ({
-          contracts: state.contracts.map((contract) =>
-            contract.id === contractId
-              ? {
-                  ...contract,
-                  milestones: Array.from(new Set([...contract.milestones, 'Logged a completed session'])),
-                  sessionRecords: contract.sessionRecords.map((session) =>
-                    session.id === sessionId ? { ...session, status: 'completed' } : session
-                  ),
-                  status: contract.sessionRecords.every((session) => session.status === 'completed')
-                    ? 'completed'
-                    : contract.status
-                }
-              : contract
-          ),
-          swapLog: [
-            {
-              id: createId('log'),
-              userId: currentUser.id,
-              title: 'Completed a swap session',
-              type: 'learned',
-              hours: 1.5,
-              badge: 'Steady Practice',
-              happenedAt: new Date().toISOString()
-            },
-            ...state.swapLog
-          ],
-          toasts: [toast('Session marked complete.'), ...state.toasts]
-        }));
+
+        set((state) => {
+          const contract = state.contracts.find((entry) => entry.id === contractId);
+          if (!contract) {
+            return state;
+          }
+
+          const nextContracts = state.contracts.map((entry) => {
+            if (entry.id !== contractId) {
+              return entry;
+            }
+
+            const nextSessions = entry.sessionRecords.map((session, index) =>
+              session.status === 'scheduled' && index === entry.sessionRecords.findIndex((item) => item.status === 'scheduled')
+                ? { ...session, status: 'completed' as const }
+                : session
+            );
+            const finished = nextSessions.every((session) => session.status === 'completed');
+
+            return {
+              ...entry,
+              sessionRecords: nextSessions,
+              status: finished ? ('awaiting-review' as const) : ('active' as const)
+            };
+          });
+
+          let nextUsers = state.users;
+          let nextLedger = state.creditLedger;
+          let nextCashPayouts = state.cashPayouts;
+
+          const updatedContract = nextContracts.find((entry) => entry.id === contractId)!;
+          const finished = updatedContract.sessionRecords.every((session) => session.status === 'completed');
+
+          if (finished && contract.creditAmount > 0) {
+            const released = releaseHeldCredits(nextUsers, nextLedger, contract.teacherId, contractId);
+            nextUsers = released.users;
+            nextLedger = released.creditLedger;
+          }
+
+          if (finished && contract.cashAmountPhp > 0) {
+            nextCashPayouts = state.cashPayouts.map((entry) =>
+              entry.agreementId === contractId ? { ...entry, status: 'scheduled' } : entry
+            );
+          }
+
+          return {
+            contracts: nextContracts,
+            users: nextUsers,
+            creditLedger: nextLedger,
+            cashPayouts: nextCashPayouts,
+            swapLog: [
+              {
+                id: createId('log'),
+                userId: currentUser.id,
+                title: `Marked ${contract.title} as done`,
+                type: contract.intent === 'workshop' ? 'workshop' : 'learned',
+                hours: updatedContract.durationMinutes / 60,
+                happenedAt: new Date().toISOString()
+              },
+              ...state.swapLog
+            ],
+            notifications: [
+              notification(
+                contract.teacherId,
+                'contract',
+                'Session marked done',
+                finished
+                  ? 'The session is complete. Reviews can now release final rewards or payout scheduling.'
+                  : 'One session was marked complete.',
+                '/app/log'
+              ),
+              ...state.notifications
+            ],
+            toasts: addToast(state, finished ? 'Session complete. Review is ready.' : 'Progress updated.')
+          };
+        });
       },
-      updateContractStatus: (contractId, status, note) => {
-        set((state) => ({
-          contracts: state.contracts.map((contract) =>
-            contract.id === contractId
-              ? {
-                  ...contract,
-                  status,
-                  notes: note ? [...contract.notes, note] : contract.notes
-                }
-              : contract
-          ),
-          toasts: [toast(`Contract ${status}.`, status === 'disputed' ? 'warning' : 'success'), ...state.toasts]
-        }));
-      },
-      reserveResource: (resourceId, acceptPolicy) => {
+      leaveAgreementReview: ({ contractId, rating, body }) => {
         const currentUser = currentUserFrom(get());
-        if (!currentUser || !acceptPolicy) {
-          set((state) => ({
-            toasts: [toast('Please accept the damage and return policy first.', 'warning'), ...state.toasts]
-          }));
+        if (!currentUser) {
           return;
         }
-        set((state) => ({
-          resources: state.resources.map((resource) =>
-            resource.id === resourceId
-              ? {
-                  ...resource,
-                  reservation: {
-                    userId: currentUser.id,
-                    acceptedPolicy: true,
-                    status: 'reserved'
+
+        set((state) => {
+          const contract = state.contracts.find((entry) => entry.id === contractId);
+          if (!contract) {
+            return state;
+          }
+
+          const targetUserId =
+            contract.learnerId === currentUser.id ? contract.teacherId : contract.learnerId;
+
+          let nextUsers = state.users;
+          let nextLedger = state.creditLedger;
+
+          if (rating === 5) {
+            nextUsers = updateUser(nextUsers, targetUserId, (user) => ({
+              ...user,
+              creditBalance: user.creditBalance + 5
+            }));
+            nextLedger = [
+              {
+                id: createId('ledger'),
+                userId: targetUserId,
+                delta: 5,
+                title: '5-star review bonus',
+                sessionType: 'review-bonus',
+                createdAt: new Date().toISOString(),
+                status: 'posted' as const,
+                agreementId: contractId
+              },
+              ...nextLedger
+            ];
+          }
+
+          return {
+            users: nextUsers,
+            creditLedger: nextLedger,
+            reviews: [
+              {
+                id: createId('review'),
+                authorId: currentUser.id,
+                targetUserId,
+                body,
+                score: rating,
+                createdAt: new Date().toISOString()
+              },
+              ...state.reviews
+            ],
+            contracts: state.contracts.map((entry) =>
+              entry.id === contractId
+                ? {
+                    ...entry,
+                    reviewLeftBy: Array.from(new Set([...entry.reviewLeftBy, currentUser.id])),
+                    status: 'completed' as const
                   }
-                }
-              : resource
-          ),
-          toasts: [toast('Resource reserved.'), ...state.toasts]
-        }));
-      },
-      returnResource: (resourceId) => {
-        set((state) => ({
-          resources: state.resources.map((resource) =>
-            resource.id === resourceId && resource.reservation
-              ? {
-                  ...resource,
-                  reservation: { ...resource.reservation, status: 'returned' }
-                }
-              : resource
-          ),
-          toasts: [toast('Resource marked as returned.'), ...state.toasts]
-        }));
+                : entry
+            ),
+            listings: state.listings.map((listing) =>
+              listing.id === contract.listingId
+                ? {
+                    ...listing,
+                    ratingAverage: Number(
+                      (
+                        (listing.ratingAverage * listing.completedSessions + rating) /
+                        (listing.completedSessions + 1)
+                      ).toFixed(2)
+                    ),
+                    completedSessions: listing.completedSessions + 1
+                  }
+                : listing
+            ),
+            notifications: [
+              notification(
+                targetUserId,
+                'credits',
+                rating === 5 ? 'You earned a review bonus' : 'New review received',
+                rating === 5
+                  ? 'A 5-star review added +5 credits to your balance.'
+                  : 'A new review was added to your profile.',
+                '/app/profile'
+              ),
+              ...state.notifications
+            ],
+            toasts: addToast(state, rating === 5 ? 'Review sent and bonus applied.' : 'Review sent.')
+          };
+        });
       },
       joinChallenge: (challengeId) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           challenges: state.challenges.map((challenge) =>
             challenge.id === challengeId
@@ -862,168 +1002,94 @@ export const useAppStore = create<AppState>()(
                 }
               : challenge
           ),
-          toasts: [toast('Challenge joined.'), ...state.toasts]
+          toasts: addToast(state, 'Challenge joined.')
         }));
       },
-      submitChallengeEntry: (challengeId, mediaType, caption, mediaUrl, partnerId) => {
+      advanceChallenge: (challengeId) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
-        set((state) => ({
-          challenges: state.challenges.map((challenge) =>
-            challenge.id === challengeId
-              ? {
-                  ...challenge,
-                  entries: [
-                    {
-                      id: createId('entry'),
-                      userId: currentUser.id,
-                      partnerId,
-                      mediaType,
-                      caption,
-                      mediaUrl,
-                      createdAt: new Date().toISOString(),
-                      voters: []
+
+        set((state) => {
+          const challenge = state.challenges.find((entry) => entry.id === challengeId);
+          if (!challenge) {
+            return state;
+          }
+
+          const currentProgress = challenge.userProgress[currentUser.id] ?? 0;
+          const nextProgress = Math.min(challenge.progressGoal, currentProgress + 1);
+          const completedNow =
+            nextProgress === challenge.progressGoal &&
+            !challenge.rewardedUserIds.includes(currentUser.id);
+
+          return {
+            users: completedNow
+              ? updateUser(state.users, currentUser.id, (user) => ({
+                  ...user,
+                  creditBalance: user.creditBalance + challenge.creditReward
+                }))
+              : state.users,
+            creditLedger: completedNow
+              ? [
+                  {
+                    id: createId('ledger'),
+                    userId: currentUser.id,
+                    delta: challenge.creditReward,
+                    title: challenge.title,
+                    sessionType: 'challenge',
+                    createdAt: new Date().toISOString(),
+                    status: 'posted'
+                  },
+                  ...state.creditLedger
+                ]
+              : state.creditLedger,
+            challenges: state.challenges.map((entry) =>
+              entry.id === challengeId
+                ? {
+                    ...entry,
+                    participantIds: Array.from(new Set([...entry.participantIds, currentUser.id])),
+                    userProgress: {
+                      ...entry.userProgress,
+                      [currentUser.id]: nextProgress
                     },
-                    ...challenge.entries
-                  ],
-                  participantIds: Array.from(new Set([...challenge.participantIds, currentUser.id]))
-                }
-              : challenge
-          ),
-          swapLog: [
-            {
-              id: createId('log'),
-              userId: currentUser.id,
-              title: 'Submitted a weekly challenge entry',
-              type: 'challenge',
-              hours: 1,
-              badge: 'Made Time',
-              happenedAt: new Date().toISOString()
-            },
-            ...state.swapLog
-          ],
-          toasts: [toast('Challenge entry submitted.'), ...state.toasts]
-        }));
-      },
-      voteChallengeEntry: (challengeId, entryId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          challenges: state.challenges.map((challenge) =>
-            challenge.id === challengeId
-              ? {
-                  ...challenge,
-                  entries: challenge.entries.map((entry) =>
-                    entry.id === entryId
-                      ? {
-                          ...entry,
-                          voters: entry.voters.includes(currentUser.id)
-                            ? entry.voters.filter((id) => id !== currentUser.id)
-                            : [...entry.voters, currentUser.id]
-                        }
-                      : entry
-                  )
-                }
-              : challenge
-          ),
-          toasts: [toast('Vote saved anonymously.'), ...state.toasts]
-        }));
-      },
-      rsvpEvent: (eventId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          events: state.events.map((event) =>
-            event.id === eventId
-              ? {
-                  ...event,
-                  attendeeIds: event.attendeeIds.includes(currentUser.id)
-                    ? event.attendeeIds.filter((id) => id !== currentUser.id)
-                    : [...event.attendeeIds, currentUser.id]
-                }
-              : event
-          ),
-          notifications: [
-            notification(
-              currentUser.id,
-              'event',
-              'RSVP updated',
-              'Your event reminder preferences stay minimal and useful.',
-              '/app/events'
+                    rewardedUserIds: completedNow
+                      ? [...entry.rewardedUserIds, currentUser.id]
+                      : entry.rewardedUserIds
+                  }
+                : entry
             ),
-            ...state.notifications
-          ],
-          toasts: [toast('RSVP updated.'), ...state.toasts]
-        }));
+            toasts: addToast(
+              state,
+              completedNow
+                ? `Challenge completed. +${challenge.creditReward} credits added.`
+                : 'Challenge progress updated.'
+            )
+          };
+        });
       },
-      hostEvent: (payload) => {
+      addResourceItem: (payload) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
-          events: [
+          resources: [
             {
-              id: createId('event'),
-              hostId: currentUser.id,
+              id: createId('resource'),
+              ownerId: currentUser.id,
               title: payload.title,
+              hobbyId: payload.hobbyId,
               description: payload.description,
-              date: payload.date,
-              time: payload.time,
-              format: payload.format,
-              location: payload.location,
-              requiredSkill: payload.requiredSkill,
-              capacity: payload.capacity,
-              attendeeIds: [],
-              checkedInIds: [],
-              moderationStatus: 'pending review'
+              condition: 'Good',
+              location: currentUser.location,
+              availabilityWindow: payload.availabilityWindow,
+              damagePolicy: payload.damagePolicy
             },
-            ...state.events
+            ...state.resources
           ],
-          toasts: [toast('Event submitted for moderation review.'), ...state.toasts]
-        }));
-      },
-      checkInEvent: (eventId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          events: state.events.map((event) =>
-            event.id === eventId
-              ? {
-                  ...event,
-                  checkedInIds: Array.from(new Set([...event.checkedInIds, currentUser.id]))
-                }
-              : event
-          ),
-          swapLog: [
-            {
-              id: createId('log'),
-              userId: currentUser.id,
-              title: 'Checked in to a meetup',
-              type: 'event',
-              hours: 2,
-              badge: 'Local Loop',
-              happenedAt: new Date().toISOString()
-            },
-            ...state.swapLog
-          ],
-          toasts: [toast('Checked in.'), ...state.toasts]
-        }));
-      },
-      saveEventRecap: (eventId, recap) => {
-        set((state) => ({
-          events: state.events.map((event) =>
-            event.id === eventId ? { ...event, recap } : event
-          ),
-          toasts: [toast('Event recap saved.'), ...state.toasts]
+          toasts: addToast(state, 'Resource added to your library.')
         }));
       },
       startConversation: (partnerId, contractId) => {
@@ -1048,8 +1114,6 @@ export const useAppStore = create<AppState>()(
               id: threadId,
               participantIds: [currentUser.id, partnerId],
               contractId,
-              consentRequestedBy: currentUser.id,
-              consentGranted: false,
               aliasMode: currentUser.anonymousMode,
               blockedBy: [],
               mutedBy: [],
@@ -1057,40 +1121,16 @@ export const useAppStore = create<AppState>()(
             },
             ...state.threads
           ],
-          toasts: [toast('Conversation request created.'), ...state.toasts]
+          toasts: addToast(state, 'Conversation ready.')
         }));
         return threadId;
       },
-      requestMessageConsent: (threadId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          threads: state.threads.map((thread) =>
-            thread.id === threadId
-              ? { ...thread, consentRequestedBy: currentUser.id }
-              : thread
-          ),
-          toasts: [toast('Consent request sent.'), ...state.toasts]
-        }));
-      },
-      grantMessageConsent: (threadId) => {
-        set((state) => ({
-          threads: state.threads.map((thread) =>
-            thread.id === threadId
-              ? { ...thread, consentGranted: true }
-              : thread
-          ),
-          toasts: [toast('Messaging unlocked for this thread.'), ...state.toasts]
-        }));
-      },
-      sendMessage: async (threadId, body, quickBoundary) => {
+      sendMessage: (threadId, body, quickBoundary) => {
         const currentUser = currentUserFrom(get());
         if (!currentUser || !body.trim()) {
           return;
         }
-        const encryptedBody = quickBoundary ? `plain:${body}` : await encryptMessage(body);
+
         set((state) => ({
           threads: state.threads.map((thread) =>
             thread.id === threadId
@@ -1101,7 +1141,7 @@ export const useAppStore = create<AppState>()(
                     {
                       id: createId('msg'),
                       senderId: currentUser.id,
-                      encryptedBody,
+                      body,
                       createdAt: new Date().toISOString(),
                       quickBoundary
                     }
@@ -1116,6 +1156,7 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
@@ -1123,17 +1164,7 @@ export const useAppStore = create<AppState>()(
               ? user.mutedThreadIds.filter((id) => id !== threadId)
               : [...user.mutedThreadIds, threadId]
           })),
-          threads: state.threads.map((thread) =>
-            thread.id === threadId
-              ? {
-                  ...thread,
-                  mutedBy: thread.mutedBy.includes(currentUser.id)
-                    ? thread.mutedBy.filter((id) => id !== currentUser.id)
-                    : [...thread.mutedBy, currentUser.id]
-                }
-              : thread
-          ),
-          toasts: [toast('Thread mute updated.'), ...state.toasts]
+          toasts: addToast(state, 'Thread mute updated.')
         }));
       },
       blockUser: (userId) => {
@@ -1141,6 +1172,7 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
@@ -1148,24 +1180,7 @@ export const useAppStore = create<AppState>()(
               ? user.blockedUserIds
               : [...user.blockedUserIds, userId]
           })),
-          toasts: [toast('User blocked.'), ...state.toasts]
-        }));
-      },
-      markNotificationRead: (notificationId) => {
-        set((state) => ({
-          notifications: state.notifications.map((item) =>
-            item.id === notificationId ? { ...item, read: true } : item
-          )
-        }));
-      },
-      clearAllNotifications: () => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          notifications: state.notifications.filter((item) => item.userId !== currentUser.id),
-          toasts: [toast('Notifications cleared.'), ...state.toasts]
+          toasts: addToast(state, 'User blocked.')
         }));
       },
       createReport: (payload) => {
@@ -1173,6 +1188,7 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           reports: [
             {
@@ -1187,217 +1203,25 @@ export const useAppStore = create<AppState>()(
             },
             ...state.reports
           ],
-          notifications: [
-            notification(
-              currentUser.id,
-              'safety',
-              'Report received',
-              'Thanks for helping keep HobbySwap safer. Moderators will review this shortly.',
-              '/app/moderation'
-            ),
-            ...state.notifications
-          ],
-          toasts: [toast('Report submitted.'), ...state.toasts]
+          toasts: addToast(state, 'Report submitted.')
         }));
       },
-      quickMatch: () => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
+      markNotificationRead: (notificationId) => {
         set((state) => ({
-          quickMatches: buildQuickMatches(currentUser, state.users, state.hobbies),
-          toasts: [toast('Fresh matches found nearby.'), ...state.toasts]
-        }));
-      },
-      startMentorship: (mentorId, hobbyId) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        get().createContract({
-          partnerId: mentorId,
-          teachSkill: `Beginner accountability in ${hobbyId}`,
-          learnSkill: `Peer guidance in ${hobbyId}`,
-          sessions: 2,
-          durationMinutes: 60,
-          format: 'Hybrid',
-          meetingPoint: 'Mutual safe public venue or call link',
-          notes: 'Framed as peer mentorship with clear boundaries.'
-        });
-        set((state) => ({
-          swapLog: [
-            {
-              id: createId('log'),
-              userId: currentUser.id,
-              title: 'Started a peer mentorship match',
-              type: 'mentorship',
-              hours: 1,
-              badge: 'Asked For Support',
-              happenedAt: new Date().toISOString()
-            },
-            ...state.swapLog
-          ]
-        }));
-      },
-      createProject: (payload) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          projects: [
-            {
-              id: createId('project'),
-              title: payload.title,
-              description: payload.description,
-              hobbyId: payload.hobbyId,
-              ownerId: currentUser.id,
-              collaboratorIds: payload.collaboratorIds,
-              tasks: { todo: [], inProgress: [], done: [] },
-              files: [],
-              celebrationSeen: false
-            },
-            ...state.projects
-          ],
-          toasts: [toast('Project space created.'), ...state.toasts]
-        }));
-      },
-      addProjectTask: (projectId, title) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          projects: state.projects.map((project) =>
-            project.id === projectId
-              ? {
-                  ...project,
-                  tasks: {
-                    ...project.tasks,
-                    todo: [
-                      ...project.tasks.todo,
-                      { id: createId('task'), title, ownerId: currentUser.id }
-                    ]
-                  }
-                }
-              : project
+          notifications: state.notifications.map((item) =>
+            item.id === notificationId ? { ...item, read: true } : item
           )
         }));
       },
-      moveProjectTask: (projectId, taskId, lane) => {
-        set((state) => ({
-          projects: state.projects.map((project) => {
-            if (project.id !== projectId) {
-              return project;
-            }
-
-            const allTasks = [...project.tasks.todo, ...project.tasks.inProgress, ...project.tasks.done];
-            const task = allTasks.find((item) => item.id === taskId);
-            if (!task) {
-              return project;
-            }
-
-            const nextTasks = {
-              todo: project.tasks.todo.filter((item) => item.id !== taskId),
-              inProgress: project.tasks.inProgress.filter((item) => item.id !== taskId),
-              done: project.tasks.done.filter((item) => item.id !== taskId)
-            };
-            nextTasks[lane] = [...nextTasks[lane], task];
-
-            return { ...project, tasks: nextTasks };
-          })
-        }));
-      },
-      addProjectFile: (projectId, name, url) => {
-        set((state) => ({
-          projects: state.projects.map((project) =>
-            project.id === projectId
-              ? {
-                  ...project,
-                  files: [...project.files, { id: createId('file'), name, url }]
-                }
-              : project
-          ),
-          toasts: [toast('Project file shared.'), ...state.toasts]
-        }));
-      },
-      markProjectCelebrationSeen: (projectId) => {
-        set((state) => ({
-          projects: state.projects.map((project) =>
-            project.id === projectId ? { ...project, celebrationSeen: true } : project
-          )
-        }));
-      },
-      createVideoPost: (payload) => {
+      clearAllNotifications: () => {
         const currentUser = currentUserFrom(get());
         if (!currentUser) {
           return;
         }
-        if (payload.durationSeconds > 180) {
-          set((state) => ({
-            toasts: [toast('Videos should stay under 3 minutes.', 'warning'), ...state.toasts]
-          }));
-          return;
-        }
+
         set((state) => ({
-          videos: [
-            {
-              id: createId('video'),
-              ownerId: currentUser.id,
-              title: payload.title,
-              url: payload.url,
-              thumbnail: payload.thumbnail,
-              hobbyId: payload.hobbyId,
-              skillLevel: payload.skillLevel,
-              format: payload.format,
-              durationSeconds: payload.durationSeconds,
-              comments: [],
-              reportedBy: []
-            },
-            ...state.videos
-          ],
-          toasts: [toast('Video shared.'), ...state.toasts]
-        }));
-      },
-      addVideoComment: (videoId, body) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser || !body.trim()) {
-          return;
-        }
-        set((state) => ({
-          videos: state.videos.map((video) =>
-            video.id === videoId
-              ? {
-                  ...video,
-                  comments: [
-                    ...video.comments,
-                    {
-                      id: createId('comment'),
-                      userId: currentUser.id,
-                      body,
-                      createdAt: new Date().toISOString(),
-                      moderated: true
-                    }
-                  ]
-                }
-              : video
-          ),
-          toasts: [toast('Comment added.'), ...state.toasts]
-        }));
-      },
-      requestVerification: (type) => {
-        const currentUser = currentUserFrom(get());
-        if (!currentUser) {
-          return;
-        }
-        set((state) => ({
-          users: updateUser(state.users, currentUser.id, (user) => ({
-            ...user,
-            verifiedPhone: type === 'phone' ? true : user.verifiedPhone,
-            verifiedLocalId: type === 'local-id' ? true : user.verifiedLocalId
-          })),
-          toasts: [toast(type === 'phone' ? 'Phone verified.' : 'Local ID verified.'), ...state.toasts]
+          notifications: state.notifications.filter((item) => item.userId !== currentUser.id),
+          toasts: addToast(state, 'Notifications cleared.')
         }));
       },
       dismissToast: (toastId) =>
@@ -1409,11 +1233,12 @@ export const useAppStore = create<AppState>()(
         if (!currentUser) {
           return;
         }
+
         set((state) => ({
           users: state.users.filter((user) => user.id !== currentUser.id),
           currentUserId: null,
           notifications: state.notifications.filter((item) => item.userId !== currentUser.id),
-          toasts: [toast('Account deleted and local session cleared.'), ...state.toasts]
+          toasts: addToast(state, 'Account deleted and local session cleared.')
         }));
       },
       resetDemoData: () =>
@@ -1424,7 +1249,7 @@ export const useAppStore = create<AppState>()(
         })
     }),
     {
-      name: 'hobbyswap-store',
+      name: 'hobbyswap-store-v2',
       storage: createJSONStorage(() => localStorage)
     }
   )

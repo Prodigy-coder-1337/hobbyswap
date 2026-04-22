@@ -1,202 +1,239 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
-import { Button, Panel, Pill, Screen, StatsGrid } from '@/components/ui';
-import { useDelayedReady } from '@/hooks/useDelayedReady';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, ModalSheet, Panel, Pill, ProgressBar, Screen, Segments } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
-import { formatDate } from '@/utils/date';
-import { locationLabel } from '@/utils/format';
+import { formatDate, formatDateTime } from '@/utils/date';
+import { dualPrice } from '@/utils/format';
+
+type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops';
 
 export default function DashboardScreen() {
-  const ready = useDelayedReady();
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
-  const hobbies = useAppStore((state) => state.hobbies);
-  const events = useAppStore((state) => state.events);
-  const challenges = useAppStore((state) => state.challenges);
+  const listings = useAppStore((state) => state.listings);
   const contracts = useAppStore((state) => state.contracts);
-  const projects = useAppStore((state) => state.projects);
-  const quickMatches = useAppStore((state) => state.quickMatches);
-  const quickMatch = useAppStore((state) => state.quickMatch);
+  const challenges = useAppStore((state) => state.challenges);
   const startConversation = useAppStore((state) => state.startConversation);
-  const swapLog = useAppStore((state) => state.swapLog);
+  const [filter, setFilter] = useState<IntentFilter>('All');
+  const [showCredits, setShowCredits] = useState(false);
 
-  if (!ready || !currentUser) {
-    return <div className="screen">Loading your dashboard…</div>;
+  const nextSession = useMemo(() => {
+    if (!currentUser) {
+      return null;
+    }
+
+    return contracts
+      .filter(
+        (contract) =>
+          [contract.teacherId, contract.learnerId].includes(currentUser.id) &&
+          ['active', 'awaiting-review'].includes(contract.status)
+      )
+      .flatMap((contract) =>
+        contract.sessionRecords
+          .filter((session) => session.status === 'scheduled')
+          .map((session) => ({ contract, session }))
+      )
+      .sort((a, b) => new Date(a.session.date).getTime() - new Date(b.session.date).getTime())[0];
+  }, [contracts, currentUser]);
+
+  const recommendations = useMemo(() => {
+    if (!currentUser) {
+      return [];
+    }
+
+    return listings
+      .filter((listing) => listing.ownerId !== currentUser.id)
+      .filter((listing) => {
+        if (filter === 'All') {
+          return true;
+        }
+
+        if (filter === 'Swaps') {
+          return listing.intent === 'swap';
+        }
+
+        if (filter === 'Teachers') {
+          return listing.intent === 'teach';
+        }
+
+        return listing.intent === 'workshop';
+      })
+      .slice(0, 4);
+  }, [listings, currentUser, filter]);
+
+  const weeklyChallenge = challenges.find((challenge) => !challenge.archived);
+  const challengeProgress = currentUser && weeklyChallenge ? weeklyChallenge.userProgress[currentUser.id] ?? 0 : 0;
+
+  if (!currentUser) {
+    return null;
   }
-
-  const activeChallenge = challenges.find((challenge) => !challenge.archived);
-  const upcomingEvents = events.slice(0, 3);
-  const activeContracts = contracts.filter(
-    (contract) =>
-      [contract.initiatorId, contract.partnerId].includes(currentUser.id) &&
-      ['active', 'pending'].includes(contract.status)
-  );
-  const hours = swapLog
-    .filter((entry) => entry.userId === currentUser.id)
-    .reduce((sum, entry) => sum + entry.hours, 0);
 
   return (
     <Screen
-      title={`Hey ${currentUser.displayName}, here is your next gentle nudge.`}
-      subtitle="A finite set of relevant actions for this week. No infinite feed, just clear progress."
-      action={
-        <Button
-          onClick={() => {
-            quickMatch();
-          }}
-        >
-          <Sparkles size={16} /> Quick Match
-        </Button>
-      }
+      title="Home"
+      subtitle="Live balance, your next commitment, and the most relevant ways to keep moving this week."
+      action={<Pill tone="teal">{currentUser.creditBalance} cr live</Pill>}
     >
-      <StatsGrid
-        items={[
-          { label: 'Trust score', value: `${currentUser.trustScore}/100`, tone: 'warm' },
-          { label: 'Hours shared', value: hours, tone: 'teal' },
-          { label: 'Active swaps', value: activeContracts.length, tone: 'mauve' }
-        ]}
-      />
+      <button className="credit-card" onClick={() => setShowCredits(true)} type="button">
+        <div className="credit-card-copy">
+          <p className="panel-eyebrow">Credit balance</p>
+          <strong>{currentUser.creditBalance} credits</strong>
+          <p>Pending earnings: {currentUser.pendingCredits} cr</p>
+        </div>
+        <div className="credit-card-meta">
+          <span>Tap for the full credit guide</span>
+          <small>Next payout: {formatDate(currentUser.nextPayoutDate)}</small>
+        </div>
+      </button>
 
-      {activeChallenge ? (
+      <Panel
+        eyebrow="Next scheduled session"
+        title={nextSession ? nextSession.contract.title : 'Nothing scheduled yet'}
+        aside={nextSession ? <Pill tone="warm">{nextSession.contract.type.replace('-', ' ')}</Pill> : null}
+      >
+        {nextSession ? (
+          <div className="stack-list">
+            <p>{nextSession.contract.locationLabel}</p>
+            <p>{formatDateTime(nextSession.session.date)} • {nextSession.contract.format}</p>
+            <div className="button-row">
+              <Button tone="secondary" onClick={() => navigate('/app/log')}>
+                Open Swap Log
+              </Button>
+              <Button
+                onClick={() => {
+                  const partnerId =
+                    nextSession.contract.teacherId === currentUser.id
+                      ? nextSession.contract.learnerId
+                      : nextSession.contract.teacherId;
+                  const threadId = startConversation(partnerId, nextSession.contract.id);
+                  navigate(`/app/messages?thread=${threadId}`);
+                }}
+              >
+                Open chat
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="button-row">
+            <Button onClick={() => navigate('/app/new')}>Plan a new swap</Button>
+            <Button tone="secondary" onClick={() => navigate('/app/discover')}>
+              Browse teachers
+            </Button>
+          </div>
+        )}
+      </Panel>
+
+      <Panel eyebrow="Recommendations" title="Personalized by intent">
+        <Segments
+          value={filter}
+          options={['All', 'Swaps', 'Teachers', 'Workshops']}
+          onChange={(next) => setFilter(next as IntentFilter)}
+        />
+        <div className="stack-list">
+          {recommendations.map((listing) => (
+            <article className="list-card clean-card" key={listing.id}>
+              <div>
+                <span className="card-label">{listing.intent}</span>
+                <strong>{listing.title}</strong>
+                <p>{listing.description}</p>
+                <small>
+                  {listing.ratingAverage.toFixed(1)} rating • {listing.completedSessions} completed sessions • {dualPrice(listing)}
+                </small>
+              </div>
+              <div className="button-column">
+                <Button
+                  onClick={() =>
+                    navigate('/app/new', {
+                      state: {
+                        mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
+                        listingId: listing.id
+                      }
+                    })
+                  }
+                >
+                  Review flow
+                </Button>
+                <Button tone="secondary" onClick={() => navigate('/app/discover')}>
+                  See details
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      {weeklyChallenge ? (
         <Panel
           eyebrow="Weekly challenge"
-          title={activeChallenge.title}
-          aside={<Pill tone="teal">Ends this week</Pill>}
+          title={weeklyChallenge.title}
+          aside={<Pill tone="mauve">+{weeklyChallenge.creditReward} cr</Pill>}
         >
-          <p>{activeChallenge.prompt}</p>
+          <p>{weeklyChallenge.prompt}</p>
+          <ProgressBar max={weeklyChallenge.progressGoal} value={challengeProgress} />
+          <div className="metric-inline">
+            <span>
+              Progress {challengeProgress}/{weeklyChallenge.progressGoal}
+            </span>
+            <span>{weeklyChallenge.participantIds.length} participants</span>
+          </div>
           <div className="button-row">
-            <Link to="/app/challenges">
-              <Button>Join challenge</Button>
-            </Link>
-            <Link to="/app/challenges">
-              <Button tone="secondary">See archive</Button>
-            </Link>
+            <Button onClick={() => navigate('/app/challenges')}>Open challenges</Button>
+            <Button tone="secondary" onClick={() => navigate('/app/log')}>
+              Open ledger
+            </Button>
           </div>
         </Panel>
       ) : null}
 
-      <Panel eyebrow="Quick actions" title="Move your week forward">
-        <div className="quick-grid">
-          <Link className="action-card" to="/app/contracts">
-            <strong>Start a swap contract</strong>
-            <p>Create a fair teach-and-learn agreement.</p>
-          </Link>
-          <Link className="action-card" to="/app/resources">
-            <strong>Borrow a resource</strong>
-            <p>Check who is lending hobby gear nearby.</p>
-          </Link>
-          <Link className="action-card" to="/app/projects">
-            <strong>Open project spaces</strong>
-            <p>Keep shared work moving with a simple kanban board.</p>
-          </Link>
-          <Link className="action-card" to="/app/mentorship">
-            <strong>Find peer guidance</strong>
-            <p>Match with someone a few steps ahead of you.</p>
-          </Link>
-        </div>
-      </Panel>
-
-      <Panel eyebrow="Nearby people and opportunities" title="Fresh matches">
+      <ModalSheet onClose={() => setShowCredits(false)} open={showCredits} title="Credits explained">
         <div className="stack-list">
-          {quickMatches.map((match) => {
-            const user = useAppStore.getState().users.find((entry) => entry.id === match.matchUserId);
-            const hobby = hobbies.find((item) => item.id === match.hobbyId);
-            if (!user) {
-              return null;
-            }
-            return (
-              <article className="list-card" key={match.id}>
-                <div>
-                  <strong>{user.displayName}</strong>
-                  <p>{match.reason}</p>
-                  <small>
-                    {hobby?.icon} {hobby?.label} • {locationLabel(user.location, currentUser.privacy.showExactLocation)}
-                  </small>
-                </div>
-                <div className="button-column">
-                  <Button
-                    tone="secondary"
-                    onClick={() => {
-                      const threadId = startConversation(user.id);
-                      navigate(`/app/messages?thread=${threadId}`);
-                    }}
-                  >
-                    Request chat
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      navigate('/app/contracts', {
-                        state: { partnerId: user.id, hobbyId: hobby?.id }
-                      })
-                    }
-                  >
-                    Draft swap
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </Panel>
+          <Panel eyebrow="Why credits exist" title="Asynchronous value, not popularity">
+            <p>
+              Credits solve the mismatch problem in skill-sharing. You can teach today, earn credits,
+              and spend them later on a totally different skill without needing a perfect direct swap.
+            </p>
+          </Panel>
 
-      <Panel eyebrow="Upcoming" title="Events near your schedule">
-        <div className="stack-list">
-          {upcomingEvents.map((event) => (
-            <article className="list-card" key={event.id}>
+          <Panel eyebrow="How you earn" title="Transparent earning rules">
+            <div className="rule-list">
               <div>
-                <strong>{event.title}</strong>
-                <p>{event.description}</p>
-                <small>
-                  {formatDate(event.date)} • {event.time} • {locationLabel(event.location, false)}
-                </small>
+                <strong>Teach a session</strong>
+                <p>You earn the listed credits when the learner confirms completion.</p>
               </div>
-              <Link to="/app/events">
-                <Button tone="secondary">Open event</Button>
-              </Link>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel eyebrow="Shared work" title="Project spaces">
-        <div className="stack-list">
-          {projects.map((project) => (
-            <article className="list-card" key={project.id}>
               <div>
-                <strong>{project.title}</strong>
-                <p>{project.description}</p>
-                <small>{project.collaboratorIds.length + 1} collaborators active</small>
+                <strong>Get a 5-star review</strong>
+                <p>Bonus +5 credits for strong teaching quality.</p>
               </div>
-              <Link to="/app/projects">
-                <Button tone="secondary">Open board</Button>
-              </Link>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel eyebrow="Swaps in motion" title="Contracts and progress">
-        <div className="stack-list">
-          {activeContracts.map((contract) => (
-            <article className="list-card" key={contract.id}>
               <div>
-                <strong>
-                  Teach: {contract.teachSkill} / Learn: {contract.learnSkill}
-                </strong>
-                <p>{contract.meetingPoint}</p>
-                <small>
-                  {contract.status} • {contract.sessionRecords.filter((session) => session.status === 'completed').length}/
-                  {contract.sessionRecords.length} sessions complete
-                </small>
+                <strong>Complete weekly challenges</strong>
+                <p>Bonus +5 to +15 credits depending on the challenge.</p>
               </div>
-              <Link to="/app/contracts">
-                <Button tone="secondary">Track</Button>
-              </Link>
-            </article>
-          ))}
+              <div>
+                <strong>Equal swaps</strong>
+                <p>No credits move at all. Equal means equal.</p>
+              </div>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="How you spend" title="Booking with clarity">
+            <div className="rule-list">
+              <div>
+                <strong>Book a teacher</strong>
+                <p>Credits are deducted at booking and held until completion.</p>
+              </div>
+              <div>
+                <strong>Book a workshop</strong>
+                <p>Some workshops offer either a cash price or a credits price.</p>
+              </div>
+              <div>
+                <strong>Cash and credits coexist</strong>
+                <p>Credit transfers are fee-free. Cash bookings show the 9% platform fee explicitly.</p>
+              </div>
+            </div>
+          </Panel>
         </div>
-      </Panel>
+      </ModalSheet>
     </Screen>
   );
 }

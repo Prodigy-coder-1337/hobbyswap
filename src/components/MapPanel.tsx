@@ -9,13 +9,16 @@ export type MapPoint = {
   label: string;
   kind: string;
   summary: string;
+  color: string;
 };
 
-const markerIcon = L.divIcon({
-  className: 'map-pin',
-  html: '<span></span>',
-  iconSize: [18, 18]
-});
+function createMarkerIcon(color: string) {
+  return L.divIcon({
+    className: 'map-pin',
+    html: `<span style="background:${color}"></span>`,
+    iconSize: [18, 18]
+  });
+}
 
 export default function MapPanel({
   points,
@@ -52,7 +55,7 @@ export default function MapPanel({
                 onSelect?.(point.id);
               }
             }}
-            icon={markerIcon}
+            icon={createMarkerIcon(point.color)}
             key={point.id}
             position={[point.lat, point.lng]}
           >
@@ -75,7 +78,9 @@ export default function MapPanel({
             }}
             type="button"
           >
-            <span>{point.kind}</span>
+            <span className="card-label" style={{ color: point.color }}>
+              {point.kind}
+            </span>
             <strong>{point.label}</strong>
             <p>{point.summary}</p>
           </button>

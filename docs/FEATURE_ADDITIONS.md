@@ -1,37 +1,37 @@
 # Feature Additions I Chose
 
-## 1. Finite dashboard pacing
+## 1. Credit explainer from the home balance card
 
-Why: The product brief explicitly rejected addictive feed mechanics.
+Why: Credits are central to the revised swap economy, so users need the rules explained right where they see their balance.
 
-How it works: The dashboard is built as a set of bounded panels with actionable next steps, not an endless scroll of content.
+How it works: Tapping the top balance card opens a plain-language explainer covering why credits exist, how they are earned, how they are spent, and how the cash fee differs from credit transfers.
 
-## 2. Local-first encrypted message payloads
+## 2. Auto-fading fixed toast stack
 
-Why: Privacy-first identity and gentle early interactions needed more than plain text local storage.
+Why: The user specifically wanted notifications that do not require scrolling and do not depend on click-to-dismiss behavior.
 
-How it works: Chat messages are stored using AES-GCM through the Web Crypto API before being rendered back into the interface.
+How it works: Toasts now render in a fixed stack below the top bar, animate in, and auto-dismiss after a short delay while still allowing manual close.
 
-## 3. Project completion celebration state
+## 3. Sticky teacher-supply nudge in Discover
 
-Why: Community projects should feel emotionally rewarding when they wrap up.
+Why: The revised product direction wants more local teachers and workshop hosts without forcing users into a separate growth funnel.
 
-How it works: When a project board clears its active lanes, the app shows a one-time celebration panel until the user dismisses it.
+How it works: Discover keeps a bottom-fixed call to action that routes straight into the listing creation flow.
 
-## 4. Accessibility-driven shell classes
+## 4. Behavior-based trust indicators
 
-Why: Accessibility settings should affect the live app, not just exist as toggles.
+Why: The product rejects clout metrics, so the profile needed a more grounded trust layer.
 
-How it works: Font scale, high contrast, and reduced motion settings feed into the app shell and change the rendered interface.
+How it works: Reliability, Responsiveness, and Follow-through are derived from completed participation signals and surfaced as readable profile metrics.
 
-## 5. Availability sync panel in events
+## 5. Transparent fee and escrow breakdowns
 
-Why: Users need a quick read on whether a meetup fits their week before committing.
+Why: Cash and credits only feel fair if the learner and teacher can see exactly what happens before confirming.
 
-How it works: The Events screen surfaces the current user’s selected availability directly above upcoming meetups.
+How it works: Booking shows payment method selection, the 9% cash fee, teacher net payout, and a simple three-step escrow diagram before confirmation.
 
-## 6. Boundary scripts in moderation and messaging
+## 6. Accessibility-driven shell classes
 
-Why: Safety tools are stronger when they help people express boundaries, not only report harm afterward.
+Why: Accessibility settings should affect the live interface rather than living as decorative toggles.
 
-How it works: The app includes one-tap quick replies inside chat plus reusable language inside the moderation screen.
+How it works: Font scale, contrast, and reduced-motion settings feed into the app shell and styling system.

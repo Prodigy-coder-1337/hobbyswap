@@ -15,17 +15,22 @@ export default function NotificationsScreen() {
     return null;
   }
 
-  const mine = notifications.filter((item) => item.userId === currentUser.id);
+  const mine = notifications.filter((entry) => entry.userId === currentUser.id);
 
   return (
     <Screen
       title="Notifications"
-      subtitle="Only updates that help you act: swaps, reminders, messages, and contract changes."
+      subtitle="Minimal, actionable updates only. The transient popups fade automatically and also live here for reference."
       action={<Button tone="secondary" onClick={clearAllNotifications}>Clear all</Button>}
     >
       <div className="stack-list">
         {mine.map((item) => (
-          <Panel eyebrow={item.type} key={item.id} title={item.title} aside={item.read ? <Pill tone="neutral">Read</Pill> : <Pill tone="warm">Unread</Pill>}>
+          <Panel
+            aside={item.read ? <Pill tone="neutral">Read</Pill> : <Pill tone="warm">Unread</Pill>}
+            eyebrow={item.type}
+            key={item.id}
+            title={item.title}
+          >
             <p>{item.body}</p>
             <small>{formatDateTime(item.createdAt)}</small>
             <div className="button-row">

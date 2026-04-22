@@ -18,20 +18,14 @@ Detailed rationale: [`docs/TECH_STACK.md`](./docs/TECH_STACK.md)
 ## Core Product Areas
 
 - Landing, auth, onboarding, and guided walkthrough
-- Activity-first dashboard with finite completion-oriented sections
-- Discovery with map + list views, search autocomplete, and filters
-- Swap marketplace with browsing, listing creation, offers, checkout, wishlists, ratings, and history
-- Skill/time swap contracts with consent-first confirmation, milestones, session tracking, disputes, and cancellation
-- Swap log with badges, participation metrics, and PDF export
-- Profile with trust score, skill portfolio, reviews, resources, and privacy-aware identity display
-- Resource library with lending, reservation, and return policy acceptance
-- Weekly challenges with collaborative entries and anonymous voting
-- Events with RSVP, hosting, moderation review, check-ins, recaps, and availability sync
-- Video hub with short tutorials, user-triggered playback, comments, and reporting
-- Encrypted messaging with consent requests, alias mode, mute, block, report, and boundary quick replies
-- Peer mentorship matching without hierarchy
-- Shared project spaces with kanban board, file sharing, and completion celebration
-- Notifications, settings, moderation, safety tools, verification, and data export/delete controls
+- Home dashboard with credit balance, pending earnings, next session, intent-filtered recommendations, and weekly challenge progress
+- Discover with map + list views, intent-colored pins, tab pills, pricing in both PHP and credits, and a sticky teacher listing nudge
+- Center `+` flow for equal swaps, credit or cash bookings, and teacher listing creation with fee breakdowns
+- Swap log with taught / learned / credits stat cards, credit ledger, session progress, payout tracker, and PDF export
+- Profile with behavior-based trust indicators, skill intent tags, personal resource sharing, and privacy toggles
+- Weekly challenges with transparent credit rewards and progress-first participation
+- Plain-text messaging with boundary replies, mute, and block controls
+- Notifications, settings, privacy controls, verification, and data export/delete controls
 
 ## Run Locally
 
@@ -57,8 +51,8 @@ No required environment variables are needed for the seeded local-first deployme
 If you later replace the seeded services with live infrastructure, common next steps would be:
 
 - Auth provider keys for Google/Facebook OAuth
+- Payment gateway credentials for Stripe / GCash / Maya wiring
 - Realtime messaging backend credentials
-- Media storage/CDN configuration
 - Optional custom tile or map provider configuration
 
 ## Demo Login
@@ -75,7 +69,7 @@ Key directories:
 - `src/screens`: all app screens
 - `src/components`: reusable UI and map components
 - `src/navigation`: route guards and mobile shell
-- `src/services`: encryption, export, matchmaking
+- `src/services`: export and matchmaking helpers
 - `src/store`: persisted global state/actions
 - `src/data`: seeded community dataset
 - `src/utils`: formatting, validation, pagination, ids

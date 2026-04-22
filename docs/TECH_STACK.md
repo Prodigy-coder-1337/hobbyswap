@@ -24,10 +24,11 @@ This choice keeps the product deployable today while still behaving like a mobil
 ## Architectural Notes
 
 - Local-first seeded state means every screen is populated on first run.
-- Zustand actions drive real mutations across listings, contracts, events, chat, moderation, and profile settings.
+- Zustand actions drive real mutations across listings, session agreements, credit ledger entries, payouts, messaging, and profile settings.
 - Route-based lazy loading reduces initial bundle cost and keeps secondary screens out of the critical path.
-- Messaging uses AES-GCM via the Web Crypto API for local encrypted payload storage.
-- The app intentionally avoids infinite scroll and uses segmented panels, pagination, and finite action sets.
+- Messaging is plain text in the current product revision so the interface stays easy to demo and follow.
+- Cash bookings simulate escrow with an explicit 9% platform fee, while credit bookings move through held and posted ledger states.
+- The app intentionally avoids infinite scroll and uses segmented panels, fixed top toasts, sticky nudges, and finite action sets.
 
 ## Tradeoffs
 

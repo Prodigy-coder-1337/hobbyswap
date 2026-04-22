@@ -1,16 +1,17 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Bell,
-  Calendar,
+  CirclePlus,
   Compass,
   Home,
-  Plus,
+  ScrollText,
   Search,
   Settings,
-  ShoppingBag,
+  Trophy,
   UserRound,
+  WalletCards,
   X
 } from 'lucide-react';
 import { Toast } from '@/types/models';
@@ -28,7 +29,7 @@ export function Screen({
   return (
     <section className="screen">
       <header className="screen-header">
-        <div>
+        <div className="screen-copy">
           <p className="screen-kicker">HobbySwap</p>
           <h1>{title}</h1>
           {subtitle ? <p className="screen-subtitle">{subtitle}</p> : null}
@@ -54,11 +55,11 @@ export function Panel({
     <div className="panel">
       {title || eyebrow || aside ? (
         <div className="panel-header">
-          <div>
+          <div className="panel-copy">
             {eyebrow ? <p className="panel-eyebrow">{eyebrow}</p> : null}
             {title ? <h3>{title}</h3> : null}
           </div>
-          {aside}
+          {aside ? <div className="panel-aside">{aside}</div> : null}
         </div>
       ) : null}
       {children}
@@ -79,7 +80,7 @@ export function Button({
   disabled?: boolean;
 }>) {
   return (
-    <button className={`button button-${tone}`} onClick={onClick} type={type} disabled={disabled}>
+    <button className={`button button-${tone}`} disabled={disabled} onClick={onClick} type={type}>
       {children}
     </button>
   );
@@ -167,8 +168,8 @@ export function Toggle({
   description?: string;
 }) {
   return (
-    <button className="toggle-row" type="button" onClick={() => onChange(!checked)}>
-      <div>
+    <button className="toggle-row" onClick={() => onChange(!checked)} type="button">
+      <div className="toggle-copy">
         <strong>{label}</strong>
         {description ? <p>{description}</p> : null}
       </div>
@@ -221,30 +222,6 @@ export function Segments({
   );
 }
 
-export function Pagination({
-  page,
-  totalPages,
-  onChange
-}: {
-  page: number;
-  totalPages: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div className="pagination">
-      <Button tone="secondary" onClick={() => onChange(page - 1)} disabled={page <= 1}>
-        Previous
-      </Button>
-      <span>
-        Page {page} of {totalPages}
-      </span>
-      <Button tone="secondary" onClick={() => onChange(page + 1)} disabled={page >= totalPages}>
-        Next
-      </Button>
-    </div>
-  );
-}
-
 export function Avatar({
   label,
   color
@@ -276,10 +253,28 @@ export function SearchField({
     <div className="search-field">
       <Search size={18} />
       <input
-        value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        value={value}
       />
+    </div>
+  );
+}
+
+export function ProgressBar({
+  value,
+  max,
+  tone = 'teal'
+}: {
+  value: number;
+  max: number;
+  tone?: 'teal' | 'warm' | 'amber';
+}) {
+  const percent = max === 0 ? 0 : Math.min(100, Math.round((value / max) * 100));
+
+  return (
+    <div className="progress-shell" role="progressbar" aria-valuemax={max} aria-valuemin={0} aria-valuenow={value}>
+      <div className={`progress-bar progress-${tone}`} style={{ width: `${percent}%` }} />
     </div>
   );
 }
@@ -300,7 +295,7 @@ export function ModalSheet({
 
   return (
     <div className="sheet-backdrop" onClick={onClose} role="presentation">
-      <div className="sheet" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+      <div className="sheet" aria-modal="true" onClick={(event) => event.stopPropagation()} role="dialog">
         <div className="sheet-header">
           <h3>{title}</h3>
           <button className="icon-button" onClick={onClose} type="button">
@@ -313,77 +308,102 @@ export function ModalSheet({
   );
 }
 
-const tabConfig = [
+const mainTabs = [
   { to: '/app/home', label: 'Home', icon: Home },
   { to: '/app/discover', label: 'Discover', icon: Compass },
-  { to: '/app/swap', label: 'Swap', icon: ShoppingBag },
-  { to: '/app/events', label: 'Events', icon: Calendar },
-  { to: '/app/profile', label: 'Profile', icon: UserRound }
-];
+  { to: '/app/challenges', label: 'Challenges', icon: Trophy },
+  { to: '/app/profile', label: 'Me', icon: UserRound }
+] as const;
 
 export function BottomNav() {
   const location = useLocation();
 
   return (
     <nav className="bottom-nav">
-      {tabConfig.map((tab) => {
-        const active = location.pathname.startsWith(tab.to);
-        const Icon = tab.icon;
-        return (
-          <Link className={`bottom-nav-link ${active ? 'active' : ''}`} key={tab.to} to={tab.to}>
-            <Icon size={18} />
-            <span>{tab.label}</span>
-          </Link>
-        );
-      })}
+      <div className="bottom-nav-side">
+        {mainTabs.slice(0, 2).map((tab) => {
+          const Icon = tab.icon;
+          const active = location.pathname.startsWith(tab.to);
+          return (
+            <Link className={`bottom-nav-link ${active ? 'active' : ''}`} key={tab.to} to={tab.to}>
+              <Icon size={18} />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      <Link className={`bottom-nav-plus ${location.pathname.startsWith('/app/new') ? 'active' : ''}`} to="/app/new">
+        <CirclePlus size={24} />
+      </Link>
+
+      <div className="bottom-nav-side">
+        {mainTabs.slice(2).map((tab) => {
+          const Icon = tab.icon;
+          const active = location.pathname.startsWith(tab.to);
+          return (
+            <Link className={`bottom-nav-link ${active ? 'active' : ''}`} key={tab.to} to={tab.to}>
+              <Icon size={18} />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
 
 const titles: Record<string, string> = {
-  '/app/home': 'Dashboard',
+  '/app/home': 'Home',
   '/app/discover': 'Discover',
-  '/app/swap': 'Swap Marketplace',
-  '/app/events': 'Events',
-  '/app/profile': 'Profile',
-  '/app/contracts': 'Swap Contracts',
+  '/app/new': 'New',
+  '/app/challenges': 'Challenges',
+  '/app/profile': 'Me',
   '/app/log': 'Swap Log',
-  '/app/resources': 'Resource Library',
-  '/app/challenges': 'Weekly Challenges',
-  '/app/messages': 'Messaging',
+  '/app/messages': 'Messages',
   '/app/notifications': 'Notifications',
   '/app/settings': 'Settings',
-  '/app/guide': 'App Guide',
-  '/app/moderation': 'Moderation',
-  '/app/mentorship': 'Mentorship',
-  '/app/projects': 'Project Spaces',
-  '/app/videos': 'Video Hub'
+  '/app/guide': 'App Guide'
 };
 
 export function TopBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
-  const isMainTab = tabConfig.some((tab) => pathname.startsWith(tab.to));
+  const isMainTab = ['/app/home', '/app/discover', '/app/new', '/app/challenges', '/app/profile'].some((tab) =>
+    pathname.startsWith(tab)
+  );
   const title = titles[pathname] ?? 'HobbySwap';
 
-  const rightAction = pathname.startsWith('/app/profile') ? (
-    <Link className="icon-button" to="/app/settings">
-      <Settings size={18} />
-    </Link>
-  ) : pathname.startsWith('/app/swap') ? (
-    <Link className="icon-button" to="/app/swap?compose=1">
-      <Plus size={18} />
-    </Link>
-  ) : pathname.startsWith('/app/events') ? (
-    <Link className="icon-button" to="/app/events?host=1">
-      <Plus size={18} />
-    </Link>
-  ) : (
-    <Link className="icon-button" to="/app/notifications">
-      <Bell size={18} />
-    </Link>
-  );
+  const rightAction =
+    pathname.startsWith('/app/profile') ? (
+      <div className="top-actions">
+        <Link className="icon-button" to="/app/notifications">
+          <Bell size={18} />
+        </Link>
+        <Link className="icon-button" to="/app/settings">
+          <Settings size={18} />
+        </Link>
+      </div>
+    ) : pathname.startsWith('/app/home') || pathname.startsWith('/app/new') ? (
+      <div className="top-actions">
+        <Link className="icon-button" to="/app/log">
+          <WalletCards size={18} />
+        </Link>
+        <Link className="icon-button" to="/app/notifications">
+          <Bell size={18} />
+        </Link>
+      </div>
+    ) : (
+      <div className="top-actions">
+        <Link className="icon-button" to="/app/log">
+          <ScrollText size={18} />
+        </Link>
+        <Link className="icon-button" to="/app/notifications">
+          <Bell size={18} />
+        </Link>
+      </div>
+    );
 
   return (
     <header className="top-bar">
@@ -398,7 +418,7 @@ export function TopBar() {
           </div>
         )}
         <div>
-          <p className="top-bar-eyebrow">Community-first hobby sharing</p>
+          <p className="top-bar-eyebrow">Community-first skill sharing</p>
           <strong>{title}</strong>
         </div>
       </div>
@@ -414,17 +434,30 @@ export function ToastStack({
   items: Toast[];
   onDismiss: (id: string) => void;
 }) {
+  useEffect(() => {
+    const timers = items.map((item) =>
+      window.setTimeout(() => {
+        onDismiss(item.id);
+      }, 3200)
+    );
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [items, onDismiss]);
+
   return (
-    <div className="toast-stack">
-      {items.slice(0, 3).map((item) => (
-        <button
-          className={`toast toast-${item.tone}`}
-          key={item.id}
-          onClick={() => onDismiss(item.id)}
-          type="button"
-        >
-          {item.message}
-        </button>
+    <div className="toast-stack" aria-live="polite">
+      {items.slice(0, 2).map((item) => (
+        <div className={`toast toast-${item.tone}`} key={item.id}>
+          <div>
+            <strong>Update</strong>
+            <p>{item.message}</p>
+          </div>
+          <button className="toast-close" onClick={() => onDismiss(item.id)} type="button">
+            <X size={14} />
+          </button>
+        </div>
       ))}
     </div>
   );

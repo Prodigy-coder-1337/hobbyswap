@@ -2,13 +2,17 @@ export type AgeGroup = '18-24' | '25-34' | '35-44' | '45+';
 export type SkillLevel = 'Beginner' | 'Learning' | 'Comfortable' | 'Can Teach';
 export type FormatPreference = 'In-person' | 'Hybrid' | 'Online';
 export type ListingCondition = 'New' | 'Good' | 'Well-loved';
+export type ListingIntent = 'teach' | 'swap' | 'workshop';
+export type PriceMode = 'free' | 'credits' | 'cash' | 'both';
+export type PaymentMethod = 'GCash' | 'Maya' | 'Card' | 'PayPal' | 'Credits';
 export type NotificationType =
   | 'swap-request'
   | 'challenge'
   | 'event'
   | 'message'
   | 'contract'
-  | 'safety';
+  | 'safety'
+  | 'credits';
 export type ReportCategory =
   | 'Safety concern'
   | 'Spam'
@@ -16,15 +20,17 @@ export type ReportCategory =
   | 'Misleading listing'
   | 'Boundary issue'
   | 'Copyright';
-export type SubjectType = 'user' | 'listing' | 'video' | 'message' | 'event';
+export type SubjectType = 'user' | 'listing' | 'message';
 export type TaskLane = 'todo' | 'inProgress' | 'done';
-export type TutorialTarget =
-  | 'home'
-  | 'discover'
-  | 'swap'
-  | 'events'
-  | 'profile'
-  | 'messages';
+export type TutorialTarget = 'home' | 'discover' | 'new' | 'challenges' | 'profile' | 'log';
+export type AgreementType = 'equal-swap' | 'credit-booking' | 'cash-booking' | 'workshop';
+export type LedgerType =
+  | 'teaching'
+  | 'learning'
+  | 'challenge'
+  | 'review-bonus'
+  | 'equal-swap'
+  | 'workshop';
 
 export interface Hobby {
   id: string;
@@ -49,6 +55,7 @@ export interface PrivacySettings {
   visibility: 'Community' | 'Matches Only' | 'Private';
   showRealName: boolean;
   showExactLocation: boolean;
+  showOnMap: boolean;
 }
 
 export interface NotificationPreferences {
@@ -104,6 +111,11 @@ export interface User {
   accessibility: AccessibilitySettings;
   blockedUserIds: string[];
   mutedThreadIds: string[];
+  creditBalance: number;
+  pendingCredits: number;
+  payoutMethod: 'GCash' | 'Maya' | 'Bank' | 'PayPal';
+  nextPayoutDate: string;
+  savedListingIds: string[];
 }
 
 export interface ListingOffer {
@@ -124,15 +136,21 @@ export interface MarketplaceListing {
   hobbyId: string;
   photos: string[];
   condition: ListingCondition;
-  swapPreference: string;
-  pricePhp: number | null;
   location: GeoPoint;
-  availability: string;
-  mode: 'swap' | 'sale' | 'both';
+  availability: string[];
+  format: FormatPreference;
+  level: SkillLevel;
+  intent: ListingIntent;
+  priceMode: PriceMode;
+  creditPrice: number | null;
+  cashPricePhp: number | null;
   savedBy: string[];
   offers: ListingOffer[];
   status: 'active' | 'reserved' | 'completed';
   createdAt: string;
+  ratingAverage: number;
+  completedSessions: number;
+  swapPreference?: string;
 }
 
 export interface Transaction {
@@ -158,31 +176,67 @@ export interface SessionRecord {
 
 export interface SwapContract {
   id: string;
-  initiatorId: string;
-  partnerId: string;
+  title: string;
+  type: AgreementType;
+  intent: ListingIntent;
+  hobbyId: string;
+  teacherId: string;
+  learnerId: string;
   teachSkill: string;
-  learnSkill: string;
+  learnSkill?: string;
   sessions: number;
   durationMinutes: number;
   format: FormatPreference;
-  meetingPoint: string;
-  videoLink?: string;
-  notes: string[];
-  milestones: string[];
-  status: 'pending' | 'active' | 'completed' | 'disputed' | 'cancelled';
+  locationLabel: string;
+  availabilityGrid: string[];
+  note: string;
+  paymentMethod?: PaymentMethod;
+  creditAmount: number;
+  cashAmountPhp: number;
+  platformFeePhp: number;
+  teacherNetPhp: number;
+  isEqualSwap: boolean;
+  status: 'pending' | 'confirmed' | 'active' | 'awaiting-review' | 'completed' | 'cancelled';
   confirmedBy: string[];
+  reviewLeftBy: string[];
   sessionRecords: SessionRecord[];
   createdAt: string;
+  listingId?: string;
 }
 
 export interface SwapLogEntry {
   id: string;
   userId: string;
   title: string;
-  type: 'learned' | 'taught' | 'event' | 'challenge' | 'mentorship';
+  type: 'learned' | 'taught' | 'challenge' | 'mentorship' | 'workshop';
   hours: number;
   badge?: string;
   happenedAt: string;
+}
+
+export interface CreditLedgerEntry {
+  id: string;
+  userId: string;
+  delta: number;
+  title: string;
+  sessionType: LedgerType;
+  createdAt: string;
+  status: 'held' | 'posted';
+  agreementId?: string;
+}
+
+export interface CashPayoutEntry {
+  id: string;
+  userId: string;
+  title: string;
+  grossPhp: number;
+  feePhp: number;
+  netPhp: number;
+  createdAt: string;
+  payoutDate: string;
+  payoutMethod: User['payoutMethod'];
+  status: 'held' | 'scheduled' | 'paid';
+  agreementId?: string;
 }
 
 export interface ResourceItem {
@@ -195,78 +249,26 @@ export interface ResourceItem {
   location: GeoPoint;
   availabilityWindow: string;
   damagePolicy: string;
-  reservation?: {
-    userId: string;
-    acceptedPolicy: boolean;
-    status: 'reserved' | 'returned';
-  };
-}
-
-export interface ChallengeEntry {
-  id: string;
-  userId: string;
-  partnerId?: string;
-  mediaType: 'photo' | 'video' | 'text';
-  caption: string;
-  mediaUrl?: string;
-  createdAt: string;
-  voters: string[];
 }
 
 export interface Challenge {
   id: string;
   title: string;
   prompt: string;
+  focus: 'Teach' | 'Swap' | 'Share';
   weekOf: string;
-  hobbyId: string;
-  entries: ChallengeEntry[];
+  creditReward: number;
+  progressGoal: number;
   participantIds: string[];
+  userProgress: Record<string, number>;
+  rewardedUserIds: string[];
   archived: boolean;
-}
-
-export interface EventItem {
-  id: string;
-  hostId: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  format: FormatPreference;
-  location: GeoPoint;
-  requiredSkill: SkillLevel;
-  capacity: number;
-  attendeeIds: string[];
-  checkedInIds: string[];
-  recap?: string;
-  moderationStatus: 'approved' | 'pending review';
-}
-
-export interface VideoComment {
-  id: string;
-  userId: string;
-  body: string;
-  createdAt: string;
-  moderated: boolean;
-}
-
-export interface VideoPost {
-  id: string;
-  ownerId: string;
-  title: string;
-  url: string;
-  thumbnail: string;
-  hobbyId: string;
-  skillLevel: SkillLevel;
-  format: FormatPreference;
-  durationSeconds: number;
-  comments: VideoComment[];
-  reportedBy: string[];
 }
 
 export interface MessageItem {
   id: string;
   senderId: string;
-  encryptedBody: string;
+  body: string;
   createdAt: string;
   quickBoundary?: boolean;
 }
@@ -275,8 +277,6 @@ export interface MessageThread {
   id: string;
   participantIds: string[];
   contractId?: string;
-  consentRequestedBy?: string;
-  consentGranted: boolean;
   aliasMode: boolean;
   blockedBy: string[];
   mutedBy: string[];
@@ -292,30 +292,6 @@ export interface NotificationItem {
   route: string;
   createdAt: string;
   read: boolean;
-}
-
-export interface ProjectTask {
-  id: string;
-  title: string;
-  ownerId: string;
-}
-
-export interface ProjectFile {
-  id: string;
-  name: string;
-  url: string;
-}
-
-export interface SharedProject {
-  id: string;
-  title: string;
-  description: string;
-  hobbyId: string;
-  ownerId: string;
-  collaboratorIds: string[];
-  tasks: Record<TaskLane, ProjectTask[]>;
-  files: ProjectFile[];
-  celebrationSeen: boolean;
 }
 
 export interface ReportItem {
@@ -359,13 +335,12 @@ export interface AppData {
   transactions: Transaction[];
   contracts: SwapContract[];
   swapLog: SwapLogEntry[];
+  creditLedger: CreditLedgerEntry[];
+  cashPayouts: CashPayoutEntry[];
   resources: ResourceItem[];
   challenges: Challenge[];
-  events: EventItem[];
-  videos: VideoPost[];
   threads: MessageThread[];
   notifications: NotificationItem[];
-  projects: SharedProject[];
   reports: ReportItem[];
   quickMatches: QuickMatch[];
   tutorialSteps: TutorialStep[];

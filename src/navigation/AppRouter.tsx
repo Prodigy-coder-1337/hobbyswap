@@ -10,21 +10,14 @@ const OnboardingScreen = lazy(() => import('@/screens/OnboardingScreen'));
 const InfoScreen = lazy(() => import('@/screens/InfoScreen'));
 const DashboardScreen = lazy(() => import('@/screens/DashboardScreen'));
 const DiscoverScreen = lazy(() => import('@/screens/DiscoverScreen'));
-const MarketplaceScreen = lazy(() => import('@/screens/MarketplaceScreen'));
-const EventsScreen = lazy(() => import('@/screens/EventsScreen'));
-const ProfileScreen = lazy(() => import('@/screens/ProfileScreen'));
-const ContractFlowScreen = lazy(() => import('@/screens/ContractFlowScreen'));
-const SwapLogScreen = lazy(() => import('@/screens/SwapLogScreen'));
-const ResourceLibraryScreen = lazy(() => import('@/screens/ResourceLibraryScreen'));
+const NewFlowScreen = lazy(() => import('@/screens/NewFlowScreen'));
 const ChallengesScreen = lazy(() => import('@/screens/ChallengesScreen'));
+const ProfileScreen = lazy(() => import('@/screens/ProfileScreen'));
+const SwapLogScreen = lazy(() => import('@/screens/SwapLogScreen'));
 const MessagingScreen = lazy(() => import('@/screens/MessagingScreen'));
 const NotificationsScreen = lazy(() => import('@/screens/NotificationsScreen'));
 const SettingsScreen = lazy(() => import('@/screens/SettingsScreen'));
 const GuideScreen = lazy(() => import('@/screens/GuideScreen'));
-const ModerationScreen = lazy(() => import('@/screens/ModerationScreen'));
-const MentorshipScreen = lazy(() => import('@/screens/MentorshipScreen'));
-const ProjectsScreen = lazy(() => import('@/screens/ProjectsScreen'));
-const VideoHubScreen = lazy(() => import('@/screens/VideoHubScreen'));
 
 function withSuspense(element: ReactNode) {
   return <Suspense fallback={<LoadingState />}>{element}</Suspense>;
@@ -80,21 +73,14 @@ function AppRoutes() {
         { index: true, element: <Navigate replace to="/app/home" /> },
         { path: 'home', element: withSuspense(<DashboardScreen />) },
         { path: 'discover', element: withSuspense(<DiscoverScreen />) },
-        { path: 'swap', element: withSuspense(<MarketplaceScreen />) },
-        { path: 'events', element: withSuspense(<EventsScreen />) },
-        { path: 'profile', element: withSuspense(<ProfileScreen />) },
-        { path: 'contracts', element: withSuspense(<ContractFlowScreen />) },
-        { path: 'log', element: withSuspense(<SwapLogScreen />) },
-        { path: 'resources', element: withSuspense(<ResourceLibraryScreen />) },
+        { path: 'new', element: withSuspense(<NewFlowScreen />) },
         { path: 'challenges', element: withSuspense(<ChallengesScreen />) },
+        { path: 'profile', element: withSuspense(<ProfileScreen />) },
+        { path: 'log', element: withSuspense(<SwapLogScreen />) },
         { path: 'messages', element: withSuspense(<MessagingScreen />) },
         { path: 'notifications', element: withSuspense(<NotificationsScreen />) },
         { path: 'settings', element: withSuspense(<SettingsScreen />) },
-        { path: 'guide', element: withSuspense(<GuideScreen />) },
-        { path: 'moderation', element: withSuspense(<ModerationScreen />) },
-        { path: 'mentorship', element: withSuspense(<MentorshipScreen />) },
-        { path: 'projects', element: withSuspense(<ProjectsScreen />) },
-        { path: 'videos', element: withSuspense(<VideoHubScreen />) }
+        { path: 'guide', element: withSuspense(<GuideScreen />) }
       ]
     },
     { path: '*', element: <Navigate replace to="/" /> }

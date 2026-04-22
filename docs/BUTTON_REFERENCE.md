@@ -2,11 +2,11 @@
 
 ## Bottom Navigation
 
-- `Home`: opens `/app/home` and shows the personalized dashboard with quick matches, challenges, projects, contracts, and upcoming events.
-- `Discover`: opens `/app/discover` and shows the map/list discovery interface with filters and autocomplete.
-- `Swap`: opens `/app/swap` and loads the marketplace browse view.
-- `Events`: opens `/app/events` and loads upcoming meetups.
-- `Profile`: opens `/app/profile` and shows the current user’s profile, portfolio, reviews, and resources.
+- `Home`: opens `/app/home` and shows the credit balance, next session, intent-filtered recommendations, and weekly challenge progress.
+- `Discover`: opens `/app/discover` and shows the map/list discovery interface with color-coded intent pins, pricing, and filters.
+- `+`: opens `/app/new` and lands on the three-mode flow for `Swap`, `Book session`, and `Create listing`.
+- `Challenges`: opens `/app/challenges` and shows the weekly challenge list plus credit reward guide.
+- `Me`: opens `/app/profile` and shows the current user’s profile, trust indicators, reviews, resources, and privacy controls.
 
 ## Landing Page
 
@@ -31,86 +31,64 @@
 
 ## Dashboard
 
-- `Quick Match`: recomputes local mentor/match suggestions and refreshes the match panel.
-- `Join challenge`: opens `/app/challenges`.
-- `Open event`: opens `/app/events`.
-- `Request chat`: creates or reuses a thread and opens `/app/messages?thread=<id>`.
-- `Draft swap`: opens `/app/contracts` with partner context.
-- Quick action cards:
-  - `Start a swap contract`: opens contracts
-  - `Borrow a resource`: opens resource library
-  - `Open project spaces`: opens shared projects
-  - `Find peer guidance`: opens mentorship
+- Credit balance card: opens the in-app credit explainer modal.
+- `Open chat`: creates or reuses a plain-text thread for the next scheduled session and opens `/app/messages?thread=<id>`.
+- Intent filter pills: swap between all recommendations, swaps, teachers, and workshops.
+- Recommendation `Book` or `Open`: routes into the center `+` flow or the relevant destination.
+- Weekly challenge card `Open challenge`: opens `/app/challenges`.
 
 ## Discover
 
 - Search field: filters results live.
 - Search suggestions: fill the search box with the tapped suggestion.
-- Hobby / format / distance filters: immediately recompute visible map/list results.
+- Filter pills `All / Swaps / Teachers / Workshops`: immediately recompute visible map/list results.
 - `Map` / `List`: switches discovery presentation mode.
-- Result `Open`: routes to messaging, events, or marketplace depending on result type.
+- Listing `Save`: opens a confirmation modal with an optional note, then stores the listing in the user shortlist.
+- Listing `Book`: routes to `/app/new` in booking mode with the selected listing preloaded.
+- Sticky `Create a listing`: routes to `/app/new` in listing mode.
 
-## Marketplace
+## New Flow
 
-- `View`: opens the listing detail sheet.
-- `Save` / `Saved`: toggles wishlist state for the current user.
-- `Send offer`: creates a swap offer and notifies the listing owner.
-- `Buy now`: simulates checkout, records a completed sale transaction, and updates history.
-- `Accept` / `Decline` on offers: finalizes or rejects a swap proposal and updates transaction state.
-- `Publish listing`: creates a new marketplace listing with the entered metadata.
-- Rating dots in History: set the current user’s transaction rating.
-
-## Swap Contracts
-
-- `Send contract for review`: creates a pending swap contract with sessions and shared notes.
-- `Confirm terms`: adds the current user’s digital confirmation and activates the contract once both sides confirm.
-- `Mark complete`: marks a session as completed and logs progress into the swap log.
-- `Open chat`: opens or creates the thread tied to that contract.
-- `Complete`: marks the contract completed with a closing note.
-- `Raise dispute`: marks the contract disputed and stores the resolution note.
-- `Cancel swap`: marks the contract cancelled and stores the resolution note.
+- Mode chips `Swap / Book session / Create listing`: change the active builder mode without leaving the screen.
+- Swap `Continue`: advances from the setup form to the contract preview.
+- Swap `Confirm agreement`: creates the agreement and routes to `/app/log`.
+- Equal swap toggle: switches the preview copy between `equal swap - no credits needed` and a credit-based agreement.
+- Booking `Continue`: advances from listing selection to payment method and then to checkout review.
+- Payment methods `GCash / Maya / Card / PayPal / Credits`: update the booking breakdown and available pricing path.
+- Booking `Confirm booking`: creates the booking, holds credits or cash payout state, and routes to `/app/log`.
+- Listing pricing toggles `Free / Credits / Cash / Both`: update visible pricing fields dynamically.
+- Listing `Publish listing`: creates the teacher or swap listing and returns the user to Discover.
 
 ## Swap Log
 
+- `Mark done`: completes the next scheduled session in the agreement and updates its progress bar.
+- `Leave review`: opens the review modal for the selected agreement.
+- Review stars: set the review score.
+- Review `Submit`: records the review, updates listing rating, and adds the +5 credit bonus for 5-star reviews.
 - `Export PDF`: generates and downloads a PDF progress summary.
-
-## Resource Library
-
-- `View policy`: opens the reservation sheet for the selected item.
-- Policy toggle: records acceptance of damage/return expectations.
-- `Confirm reservation`: reserves the resource for the current user.
-- `Return item`: marks a reserved item as returned.
+- Payout tracker: shows held or scheduled cash payouts, next payout date, and selected payout method.
 
 ## Weekly Challenges
 
 - `Join challenge`: adds the current user to the active challenge participant list.
-- `Submit entry`: creates a new text/photo/video challenge submission.
-- `Vote anonymously` / `Voted`: toggles the current user’s anonymous vote on an entry.
-
-## Events
-
-- `RSVP`: toggles event attendance.
-- `Check in`: records attendance after arrival and adds a swap-log event entry.
-- `Save recap`: stores the event recap text.
-- `Submit for moderation review`: creates a hosted event with pending moderation status.
+- `Log progress`: advances the user’s challenge progress and awards credits when the goal is reached.
 
 ## Messaging
 
-- `Resend consent request`: refreshes the consent request on a locked thread.
-- `Approve conversation`: grants first-message consent on the selected thread.
 - `Mute`: toggles mute state for the current thread.
 - `Block`: blocks the other participant.
-- `Report`: files a moderation report against the thread.
 - Boundary quick replies: send one-tap boundary messages into the thread.
-- `Send encrypted message`: encrypts and appends the message body to the current thread.
+- `Send message`: appends the plain-text message body to the current thread.
 
 ## Profile
 
-- `Settings`: routes to `/app/settings`.
-- `Save profile`: updates display name, real name, and bio.
+- `Save profile`: updates display name and bio.
+- `Add resource`: adds a new lendable item to the user resource library.
+- Privacy toggles: update anonymity, map visibility, and barangay visibility immediately.
 
 ## Notifications
 
+- Toast close button: dismisses a toast immediately, while untouched toasts fade out automatically.
 - `Mark read`: flags a notification as read.
 - `Open`: routes to the referenced screen.
 - `Clear all`: removes current-user notifications.
@@ -128,27 +106,3 @@
 - `Export my data`: downloads the persisted app state as JSON.
 - `Reset demo data`: restores the seeded initial data.
 - `Delete account`: removes the current user locally and returns to landing.
-
-## Moderation & Safety
-
-- `Submit report`: creates a new moderation report.
-
-## Mentorship
-
-- `Request peer mentorship`: creates a mentorship-flavored swap contract and routes naturally toward contracts.
-- `Start chat`: creates or reuses a thread with the selected mentor and opens messaging.
-
-## Project Spaces
-
-- `Create project space`: creates a new shared project with selected collaborators.
-- `Add task`: appends a new kanban task to the To Do lane.
-- `To Do` / `Doing` / `Done`: move a task between project lanes.
-- `Share file`: appends a shared project file URL.
-- `Mark celebration seen`: dismisses the completion celebration state.
-
-## Video Hub
-
-- Native video controls: user-initiated playback only, no autoplay.
-- `Comment`: appends a moderated comment to the selected video.
-- `Report video`: files a moderation report for that video.
-- `Publish video`: creates a new short-form hobby video post if duration is within the 3-minute rule.

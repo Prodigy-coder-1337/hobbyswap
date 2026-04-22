@@ -4,113 +4,95 @@ import MapPanel, { MapPoint } from '@/components/MapPanel';
 import {
   Button,
   EmptyState,
-  Pagination,
+  Field,
+  ModalSheet,
   Panel,
   Pill,
   Screen,
   SearchField,
-  Segments
+  Segments,
+  TextArea
 } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useAppStore } from '@/store/useAppStore';
 import { distanceKm } from '@/services/matchmaking';
-import { paginate } from '@/utils/pagination';
+import { useAppStore } from '@/store/useAppStore';
+import { dualPrice } from '@/utils/format';
+
+const intentColors = {
+  teach: '#d86c42',
+  swap: '#789e78',
+  workshop: '#d8a246'
+};
+
+type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops';
 
 export default function DiscoverScreen() {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
-  const hobbies = useAppStore((state) => state.hobbies);
-  const users = useAppStore((state) => state.users);
-  const events = useAppStore((state) => state.events);
   const listings = useAppStore((state) => state.listings);
-  const startConversation = useAppStore((state) => state.startConversation);
+  const saveListingForLater = useAppStore((state) => state.saveListingForLater);
+  const [tab, setTab] = useState<IntentFilter>('All');
   const [view, setView] = useState<'Map' | 'List'>('Map');
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
-    hobbyId: 'all',
-    format: 'all',
-    maxDistance: 15
-  });
+  const [selectedSaveId, setSelectedSaveId] = useState('');
+  const [saveNote, setSaveNote] = useState('');
 
-  const suggestions = useMemo(() => {
-    const pool = [
-      ...users.map((user) => user.displayName),
-      ...events.map((event) => event.title),
-      ...listings.map((listing) => listing.title)
-    ];
-    return pool.filter((item) => item.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
-  }, [users, events, listings, query]);
-
-  const results = useMemo(() => {
+  const visible = useMemo(() => {
     if (!currentUser) {
       return [];
     }
 
-    const matches = [
-      ...users
-        .filter((user) => user.id !== currentUser.id)
-        .map((user) => ({
-          id: `user-${user.id}`,
-          kind: 'Person',
-          title: user.displayName,
-          summary: user.bio,
-          hobbyId: user.hobbyProfiles[0]?.hobbyId ?? 'watercolor',
-          format: user.preferredFormats[0] ?? 'Hybrid',
-          lat: user.location.lat,
-          lng: user.location.lng,
-          distance: distanceKm(currentUser.location.lat, currentUser.location.lng, user.location.lat, user.location.lng),
-          action: () => {
-            const threadId = startConversation(user.id);
-            navigate(`/app/messages?thread=${threadId}`);
-          }
-        })),
-      ...events.map((event) => ({
-        id: `event-${event.id}`,
-        kind: 'Event',
-        title: event.title,
-        summary: event.description,
-        hobbyId: 'watercolor',
-        format: event.format,
-        lat: event.location.lat,
-        lng: event.location.lng,
-        distance: distanceKm(currentUser.location.lat, currentUser.location.lng, event.location.lat, event.location.lng),
-        action: () => navigate('/app/events')
-      })),
-      ...listings.map((listing) => ({
-        id: `listing-${listing.id}`,
-        kind: 'Swap',
-        title: listing.title,
-        summary: listing.description,
-        hobbyId: listing.hobbyId,
-        format: 'In-person' as const,
-        lat: listing.location.lat,
-        lng: listing.location.lng,
-        distance: distanceKm(currentUser.location.lat, currentUser.location.lng, listing.location.lat, listing.location.lng),
-        action: () => navigate('/app/swap')
+    return listings
+      .filter((listing) => listing.ownerId !== currentUser.id)
+      .filter((listing) => {
+        if (tab === 'Swaps') {
+          return listing.intent === 'swap';
+        }
+        if (tab === 'Teachers') {
+          return listing.intent === 'teach';
+        }
+        if (tab === 'Workshops') {
+          return listing.intent === 'workshop';
+        }
+        return true;
+      })
+      .filter((listing) => {
+        if (!query.trim()) {
+          return true;
+        }
+
+        return `${listing.title} ${listing.description} ${listing.location.city}`
+          .toLowerCase()
+          .includes(query.toLowerCase());
+      })
+      .map((listing) => ({
+        listing,
+        distance: distanceKm(
+          currentUser.location.lat,
+          currentUser.location.lng,
+          listing.location.lat,
+          listing.location.lng
+        )
       }))
-    ];
+      .sort((a, b) => a.distance - b.distance);
+  }, [currentUser, listings, query, tab]);
 
-    return matches.filter((result) => {
-      const hobbyMatch = filters.hobbyId === 'all' || result.hobbyId === filters.hobbyId;
-      const formatMatch = filters.format === 'all' || result.format === filters.format;
-      const distanceMatch = result.distance <= filters.maxDistance;
-      const queryMatch =
-        !query ||
-        `${result.title} ${result.summary}`.toLowerCase().includes(query.toLowerCase());
-      return hobbyMatch && formatMatch && distanceMatch && queryMatch;
-    });
-  }, [currentUser, users, events, listings, filters, query, navigate, startConversation]);
-
-  const paged = paginate(results, page, 5);
-  const points: MapPoint[] = results.map((result) => ({
-    id: result.id,
-    lat: result.lat,
-    lng: result.lng,
-    label: result.title,
-    kind: result.kind,
-    summary: `${result.kind} • ${result.distance.toFixed(1)} km away`
+  const points: MapPoint[] = visible.map(({ listing, distance }) => ({
+    id: listing.id,
+    lat: listing.location.lat,
+    lng: listing.location.lng,
+    label: listing.title,
+    kind:
+      listing.intent === 'teach'
+        ? 'Teacher'
+        : listing.intent === 'swap'
+          ? 'Swap'
+          : 'Workshop',
+    summary: `${distance.toFixed(1)} km • ${dualPrice(listing)}`,
+    color: intentColors[listing.intent]
   }));
+
+  const saveTarget = visible.find(({ listing }) => listing.id === selectedSaveId)?.listing;
 
   if (!currentUser) {
     return null;
@@ -118,87 +100,102 @@ export default function DiscoverScreen() {
 
   return (
     <Screen
-      title="Find nearby hobby energy"
-      subtitle="Browse people, swaps, and meetups with a map-first view and tight filters."
-      action={<Pill tone="teal">{results.length} matches</Pill>}
+      title="Discover"
+      subtitle="Explore swaps, teachers, and workshops with clear pricing, local context, and intent-first filtering."
+      action={<Pill tone="teal">{visible.length} nearby</Pill>}
     >
       <Panel>
-        <SearchField value={query} onChange={setQuery} placeholder="Search hobbies, people, events, or items" />
-        {query && suggestions.length ? (
-          <div className="suggestion-list">
-            {suggestions.map((item) => (
-              <button className="suggestion" key={item} onClick={() => setQuery(item)} type="button">
-                {item}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <div className="filter-row">
-          <select
-            className="text-input"
-            value={filters.hobbyId}
-            onChange={(event) => setFilters((state) => ({ ...state, hobbyId: event.target.value }))}
-          >
-            <option value="all">All hobbies</option>
-            {hobbies.map((hobby) => (
-              <option key={hobby.id} value={hobby.id}>
-                {hobby.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="text-input"
-            value={filters.format}
-            onChange={(event) => setFilters((state) => ({ ...state, format: event.target.value }))}
-          >
-            <option value="all">All formats</option>
-            <option value="In-person">In-person</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Online">Online</option>
-          </select>
-
-          <select
-            className="text-input"
-            value={filters.maxDistance}
-            onChange={(event) => setFilters((state) => ({ ...state, maxDistance: Number(event.target.value) }))}
-          >
-            <option value={5}>Within 5 km</option>
-            <option value={10}>Within 10 km</option>
-            <option value={15}>Within 15 km</option>
-            <option value={25}>Within 25 km</option>
-          </select>
-        </div>
+        <SearchField value={query} onChange={setQuery} placeholder="Search by skill, teacher, or city" />
+        <Segments
+          value={tab}
+          options={['All', 'Swaps', 'Teachers', 'Workshops']}
+          onChange={(next) => setTab(next as IntentFilter)}
+        />
+        <Segments value={view} options={['Map', 'List']} onChange={(next) => setView(next as 'Map' | 'List')} />
       </Panel>
 
-      <Segments value={view} options={['Map', 'List']} onChange={(next) => setView(next as 'Map' | 'List')} />
-
-      {results.length === 0 ? (
+      {visible.length === 0 ? (
         <EmptyState
           title="No matches yet"
-          body="Try widening your distance or clearing a filter to see more people, events, and listings."
+          body="Try a broader search or switch back to All to widen the local pool."
         />
       ) : view === 'Map' ? (
         <MapPanel points={points} />
       ) : (
-        <Panel eyebrow="List view" title="Nearby opportunities">
+        <Panel eyebrow="Nearby options" title="List view">
           <div className="stack-list">
-            {paged.items.map((result) => (
-              <article className="list-card" key={result.id}>
+            {visible.map(({ listing, distance }) => (
+              <article className="list-card clean-card" key={listing.id}>
                 <div>
-                  <span className="card-label">{result.kind}</span>
-                  <strong>{result.title}</strong>
-                  <p>{result.summary}</p>
-                  <small>{result.distance.toFixed(1)} km away</small>
+                  <span className="card-label" style={{ color: intentColors[listing.intent] }}>
+                    {listing.intent === 'teach' ? 'Teacher' : listing.intent === 'swap' ? 'Swap' : 'Workshop'}
+                  </span>
+                  <strong>{listing.title}</strong>
+                  <p>{listing.description}</p>
+                  <small>
+                    {listing.ratingAverage.toFixed(1)} rating • {distance.toFixed(1)} km • {dualPrice(listing)}
+                  </small>
                 </div>
-                <Button onClick={result.action}>Open</Button>
+                <div className="button-column">
+                  <Button
+                    onClick={() =>
+                      navigate('/app/new', {
+                        state: {
+                          mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
+                          listingId: listing.id
+                        }
+                      })
+                    }
+                  >
+                    Review flow
+                  </Button>
+                  <Button tone="secondary" onClick={() => setSelectedSaveId(listing.id)}>
+                    Save for later
+                  </Button>
+                </div>
               </article>
             ))}
           </div>
-          <Pagination page={paged.page} totalPages={paged.totalPages} onChange={setPage} />
         </Panel>
       )}
+
+      <div className="sticky-nudge">
+        <div>
+          <strong>Are you a teacher?</strong>
+          <p>Create a listing and set free, credits, cash, or dual pricing.</p>
+        </div>
+        <Button onClick={() => navigate('/app/new', { state: { mode: 'Create listing' } })}>
+          Create a listing
+        </Button>
+      </div>
+
+      <ModalSheet onClose={() => setSelectedSaveId('')} open={Boolean(saveTarget)} title="Save to shortlist">
+        {saveTarget ? (
+          <div className="stack-list">
+            <Panel eyebrow="Review before saving" title={saveTarget.title}>
+              <p>{saveTarget.description}</p>
+              <small>{dualPrice(saveTarget)}</small>
+            </Panel>
+            <Field hint="Optional reminder for future you" label="Short note">
+              <TextArea value={saveNote} onChange={(event) => setSaveNote(event.target.value)} />
+            </Field>
+            <div className="button-row">
+              <Button tone="secondary" onClick={() => setSelectedSaveId('')}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  saveListingForLater(saveTarget.id, saveNote);
+                  setSaveNote('');
+                  setSelectedSaveId('');
+                }}
+              >
+                Confirm save
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </ModalSheet>
     </Screen>
   );
 }

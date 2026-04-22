@@ -1,8 +1,8 @@
-import { GeoPoint, User } from '@/types/models';
+import { GeoPoint, MarketplaceListing, User } from '@/types/models';
 
 export function peso(value: number | null) {
   if (value === null) {
-    return 'Swap only';
+    return 'Free';
   }
 
   return new Intl.NumberFormat('en-PH', {
@@ -10,6 +10,29 @@ export function peso(value: number | null) {
     currency: 'PHP',
     maximumFractionDigits: 0
   }).format(value);
+}
+
+export function credits(value: number | null) {
+  if (value === null) {
+    return 'No credits';
+  }
+
+  return `${value} cr`;
+}
+
+export function dualPrice(listing: Pick<MarketplaceListing, 'priceMode' | 'creditPrice' | 'cashPricePhp'>) {
+  switch (listing.priceMode) {
+    case 'free':
+      return 'Free';
+    case 'credits':
+      return credits(listing.creditPrice);
+    case 'cash':
+      return peso(listing.cashPricePhp);
+    case 'both':
+      return `${peso(listing.cashPricePhp)} or ${credits(listing.creditPrice)}`;
+    default:
+      return 'Flexible';
+  }
 }
 
 export function locationLabel(location: GeoPoint, precise = true) {

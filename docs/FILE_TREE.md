@@ -35,27 +35,19 @@
 |   |-- screens
 |   |   |-- AuthScreen.tsx
 |   |   |-- ChallengesScreen.tsx
-|   |   |-- ContractFlowScreen.tsx
 |   |   |-- DashboardScreen.tsx
 |   |   |-- DiscoverScreen.tsx
-|   |   |-- EventsScreen.tsx
 |   |   |-- GuideScreen.tsx
 |   |   |-- InfoScreen.tsx
 |   |   |-- LandingScreen.tsx
-|   |   |-- MarketplaceScreen.tsx
-|   |   |-- MentorshipScreen.tsx
 |   |   |-- MessagingScreen.tsx
-|   |   |-- ModerationScreen.tsx
+|   |   |-- NewFlowScreen.tsx
 |   |   |-- NotificationsScreen.tsx
 |   |   |-- OnboardingScreen.tsx
 |   |   |-- ProfileScreen.tsx
-|   |   |-- ProjectsScreen.tsx
-|   |   |-- ResourceLibraryScreen.tsx
 |   |   |-- SettingsScreen.tsx
-|   |   |-- SwapLogScreen.tsx
-|   |   `-- VideoHubScreen.tsx
+|   |   `-- SwapLogScreen.tsx
 |   |-- services
-|   |   |-- encryption.ts
 |   |   |-- export.ts
 |   |   `-- matchmaking.ts
 |   |-- store
