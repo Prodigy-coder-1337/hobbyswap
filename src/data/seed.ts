@@ -306,6 +306,24 @@ export const seedData: AppData = {
       mutedThreadIds: []
     }
   ],
+  reviews: [
+    {
+      id: 'review-1',
+      authorId: 'user-2',
+      targetUserId: 'user-me',
+      body: 'Mika made the session feel easy to join, especially for someone rusty with journaling.',
+      score: 5,
+      createdAt: '2026-04-20T08:00:00.000Z'
+    },
+    {
+      id: 'review-2',
+      authorId: 'user-3',
+      targetUserId: 'user-me',
+      body: 'Clear with boundaries, generous with prompts, and very patient about beginner pacing.',
+      score: 5,
+      createdAt: '2026-04-16T08:00:00.000Z'
+    }
+  ],
   listings: [
     {
       id: 'listing-1',

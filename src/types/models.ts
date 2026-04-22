@@ -354,6 +354,7 @@ export interface TutorialStep {
 export interface AppData {
   hobbies: Hobby[];
   users: User[];
+  reviews: Review[];
   listings: MarketplaceListing[];
   transactions: Transaction[];
   contracts: SwapContract[];
