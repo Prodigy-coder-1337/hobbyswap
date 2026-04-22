@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  AvailabilityBuilder,
+  createAvailabilitySlot,
+  formatAvailabilitySlot,
+  type AvailabilitySlot
+} from '@/components/AvailabilityBuilder';
+import {
   Button,
   Field,
   Panel,
@@ -18,17 +24,6 @@ import { PaymentMethod, PriceMode } from '@/types/models';
 import { credits, dualPrice, peso } from '@/utils/format';
 
 type FlowMode = 'Swap' | 'Book session' | 'Create listing';
-
-const availabilityOptions = [
-  'Mon evening',
-  'Tue evening',
-  'Wed evening',
-  'Thu evening',
-  'Fri evening',
-  'Sat morning',
-  'Sat afternoon',
-  'Sun morning'
-];
 
 const paymentOptions: PaymentMethod[] = ['GCash', 'Maya', 'Card', 'PayPal', 'Credits'];
 
@@ -58,7 +53,10 @@ export default function NewFlowScreen() {
     equalSwap: true,
     creditAmount: '15',
     note: 'Keep the pacing beginner-friendly and confirm boundaries after each session.',
-    availabilityGrid: ['Tue evening', 'Sat morning']
+    availabilitySlots: [
+      createAvailabilitySlot({ day: 'Tuesday', time: '6:00 PM' }),
+      createAvailabilitySlot({ day: 'Saturday', time: '10:00 AM' })
+    ]
   });
 
   const teacherListings = useMemo(
@@ -69,7 +67,7 @@ export default function NewFlowScreen() {
   const [bookingForm, setBookingForm] = useState({
     listingId: routeState?.listingId ?? teacherListings[0]?.id ?? '',
     paymentMethod: 'Credits' as PaymentMethod,
-    scheduleLabel: 'First available slot',
+    scheduleSlots: [createAvailabilitySlot({ day: 'Friday', time: '6:00 PM' })],
     note: 'Please keep this beginner-safe and low pressure.'
   });
 
@@ -84,7 +82,10 @@ export default function NewFlowScreen() {
     creditPrice: '15',
     cashPricePhp: '350',
     photoUrl: '',
-    availability: ['Thu evening', 'Sat morning']
+    availabilitySlots: [
+      createAvailabilitySlot({ day: 'Thursday', time: '6:00 PM' }),
+      createAvailabilitySlot({ day: 'Saturday', time: '10:00 AM' })
+    ]
   });
 
   useEffect(() => {
@@ -129,6 +130,11 @@ export default function NewFlowScreen() {
     createForm.priceMode === 'cash' || createForm.priceMode === 'both'
       ? Number((Number(createForm.cashPricePhp || 0) * 0.09).toFixed(2))
       : 0;
+  const swapAvailabilityLabels = swapForm.availabilitySlots.map((slot) => formatAvailabilitySlot(slot));
+  const createAvailabilityLabels = createForm.availabilitySlots.map((slot) => formatAvailabilitySlot(slot));
+  const requestedSchedule = bookingForm.scheduleSlots[0]
+    ? formatAvailabilitySlot(bookingForm.scheduleSlots[0])
+    : 'Schedule to be confirmed';
 
   if (!currentUser) {
     return null;
@@ -204,27 +210,13 @@ export default function NewFlowScreen() {
                   <option value="Online">Online</option>
                 </select>
               </Field>
-              <Field label="Availability grid">
-                <div className="chip-wrap">
-                  {availabilityOptions.map((slot) => (
-                    <button
-                      className={`chip ${swapForm.availabilityGrid.includes(slot) ? 'active' : ''}`}
-                      key={slot}
-                      onClick={() =>
-                        setSwapForm((state) => ({
-                          ...state,
-                          availabilityGrid: state.availabilityGrid.includes(slot)
-                            ? state.availabilityGrid.filter((item) => item !== slot)
-                            : [...state.availabilityGrid, slot]
-                        }))
-                      }
-                      type="button"
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              </Field>
+              <AvailabilityBuilder
+                addLabel="Add another availability slot"
+                hint="Pick the exact day, date, and time options you want your partner to choose from."
+                label="Availability choices"
+                slots={swapForm.availabilitySlots}
+                onChange={(availabilitySlots) => setSwapForm((state) => ({ ...state, availabilitySlots }))}
+              />
               <Field label="Meeting point or location">
                 <TextInput
                   value={swapForm.locationLabel}
@@ -258,8 +250,8 @@ export default function NewFlowScreen() {
               <Panel eyebrow="Contract preview" title={`${swapForm.teachSkill} ↔ ${swapForm.learnSkill}`}>
                 <div className="rule-list">
                   <div>
-                    <strong>Availability grid</strong>
-                    <p>{swapForm.availabilityGrid.join(', ')}</p>
+                    <strong>Availability choices</strong>
+                    <p>{swapAvailabilityLabels.join(' • ')}</p>
                   </div>
                   <div>
                     <strong>Format and duration</strong>
@@ -290,7 +282,7 @@ export default function NewFlowScreen() {
                       sessions: Number(swapForm.sessions),
                       durationMinutes: Number(swapForm.durationMinutes),
                       format: swapForm.format as 'In-person' | 'Hybrid' | 'Online',
-                      availabilityGrid: swapForm.availabilityGrid,
+                      availabilityGrid: swapAvailabilityLabels,
                       locationLabel: swapForm.locationLabel,
                       equalSwap: swapForm.equalSwap,
                       creditAmount: Number(swapForm.creditAmount || 0),
@@ -332,12 +324,13 @@ export default function NewFlowScreen() {
                   </small>
                 </Panel>
               ) : null}
-              <Field label="Requested schedule">
-                <TextInput
-                  value={bookingForm.scheduleLabel}
-                  onChange={(event) => setBookingForm((state) => ({ ...state, scheduleLabel: event.target.value }))}
-                />
-              </Field>
+              <AvailabilityBuilder
+                hint="Choose one exact schedule option so both sides see the same starting plan."
+                label="Requested schedule"
+                maxSlots={1}
+                slots={bookingForm.scheduleSlots}
+                onChange={(scheduleSlots) => setBookingForm((state) => ({ ...state, scheduleSlots }))}
+              />
               <Field label="Booking note">
                 <TextArea
                   value={bookingForm.note}
@@ -377,6 +370,10 @@ export default function NewFlowScreen() {
             <div className="stack-list">
               <Panel eyebrow="Checkout review" title={selectedBooking.title}>
                 <div className="rule-list">
+                  <div>
+                    <strong>Requested schedule</strong>
+                    <p>{requestedSchedule}</p>
+                  </div>
                   <div>
                     <strong>Payment method</strong>
                     <p>{bookingForm.paymentMethod}</p>
@@ -427,7 +424,7 @@ export default function NewFlowScreen() {
                     bookSession({
                       listingId: selectedBooking.id,
                       paymentMethod: bookingForm.paymentMethod,
-                      scheduleLabel: bookingForm.scheduleLabel,
+                      scheduleLabel: requestedSchedule,
                       note: bookingForm.note
                     });
                     navigate('/app/log');
@@ -550,27 +547,13 @@ export default function NewFlowScreen() {
                   />
                 </Field>
               ) : null}
-              <Field label="Availability">
-                <div className="chip-wrap">
-                  {availabilityOptions.map((slot) => (
-                    <button
-                      className={`chip ${createForm.availability.includes(slot) ? 'active' : ''}`}
-                      key={slot}
-                      onClick={() =>
-                        setCreateForm((state) => ({
-                          ...state,
-                          availability: state.availability.includes(slot)
-                            ? state.availability.filter((item) => item !== slot)
-                            : [...state.availability, slot]
-                        }))
-                      }
-                      type="button"
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              </Field>
+              <AvailabilityBuilder
+                addLabel="Add another availability slot"
+                hint="Show exact day, date, and time windows instead of vague weekly slots."
+                label="Availability"
+                slots={createForm.availabilitySlots}
+                onChange={(availabilitySlots) => setCreateForm((state) => ({ ...state, availabilitySlots }))}
+              />
               <Field hint="Optional URL for the listing cover image" label="Photo URL">
                 <TextInput
                   value={createForm.photoUrl}
@@ -598,8 +581,12 @@ export default function NewFlowScreen() {
                           ? `${createForm.creditPrice} credits`
                           : createForm.priceMode === 'cash'
                             ? `₱${createForm.cashPricePhp}`
-                            : `₱${createForm.cashPricePhp} or ${createForm.creditPrice} credits`}
+                          : `₱${createForm.cashPricePhp} or ${createForm.creditPrice} credits`}
                     </p>
+                  </div>
+                  <div>
+                    <strong>Availability</strong>
+                    <p>{createAvailabilityLabels.join(' • ')}</p>
                   </div>
                   <div>
                     <strong>Teacher-facing fee rule</strong>
@@ -635,7 +622,7 @@ export default function NewFlowScreen() {
                         createForm.priceMode === 'cash' || createForm.priceMode === 'both'
                           ? Number(createForm.cashPricePhp)
                           : null,
-                      availability: createForm.availability,
+                      availability: createAvailabilityLabels,
                       photoUrl: createForm.photoUrl
                     });
                     navigate('/app/discover');

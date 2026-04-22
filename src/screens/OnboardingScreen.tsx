@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AvailabilityBuilder, createAvailabilitySlot, formatAvailabilitySlot } from '@/components/AvailabilityBuilder';
 import { Button, Field, Panel, Pill, Screen, Toggle } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
@@ -7,17 +8,6 @@ import { SkillLevel } from '@/types/models';
 import { validateRequired, validateSelection } from '@/utils/validators';
 
 const levels: SkillLevel[] = ['Beginner', 'Learning', 'Comfortable', 'Can Teach'];
-const availabilityOptions = [
-  'Mon evening',
-  'Tue evening',
-  'Wed evening',
-  'Thu evening',
-  'Fri evening',
-  'Sat morning',
-  'Sat afternoon',
-  'Sun morning',
-  'Sun afternoon'
-];
 const formats = ['In-person', 'Hybrid', 'Online'] as const;
 
 export default function OnboardingScreen() {
@@ -27,18 +17,21 @@ export default function OnboardingScreen() {
   const completeOnboarding = useAppStore((state) => state.completeOnboarding);
   const [displayName, setDisplayName] = useState(currentUser?.displayName ?? '');
   const [selectedHobbies, setSelectedHobbies] = useState<Record<string, SkillLevel>>({});
-  const [availability, setAvailability] = useState<string[]>([]);
+  const [availabilitySlots, setAvailabilitySlots] = useState([
+    createAvailabilitySlot({ day: 'Tuesday', time: '6:00 PM' })
+  ]);
   const [preferredFormats, setPreferredFormats] = useState<string[]>(['Hybrid']);
   const [anonymousMode, setAnonymousMode] = useState(true);
+  const availability = availabilitySlots.map((slot) => formatAvailabilitySlot(slot));
 
   const errors = useMemo(
     () => ({
       displayName: validateRequired(displayName, 'Display name'),
       hobbies: validateSelection(Object.keys(selectedHobbies), 'Hobby'),
-      availability: validateSelection(availability, 'Availability'),
+      availability: validateSelection(availabilitySlots, 'Availability'),
       formats: validateSelection(preferredFormats, 'Format')
     }),
-    [displayName, selectedHobbies, availability, preferredFormats]
+    [displayName, selectedHobbies, availabilitySlots, preferredFormats]
   );
 
   if (!currentUser) {
@@ -147,24 +140,13 @@ export default function OnboardingScreen() {
         </Panel>
 
         <Panel eyebrow="Availability" title="When are you usually open?">
-          <div className="chip-wrap">
-            {availabilityOptions.map((option) => (
-              <button
-                className={`chip ${availability.includes(option) ? 'active' : ''}`}
-                key={option}
-                onClick={() =>
-                  setAvailability((state) =>
-                    state.includes(option)
-                      ? state.filter((item) => item !== option)
-                      : [...state, option]
-                  )
-                }
-                type="button"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+          <AvailabilityBuilder
+            addLabel="Add another time"
+            hint="Choose the actual day, date, and time you can usually make work."
+            label="Availability slots"
+            slots={availabilitySlots}
+            onChange={setAvailabilitySlots}
+          />
           {errors.availability ? <p className="field-error">{errors.availability}</p> : null}
         </Panel>
 

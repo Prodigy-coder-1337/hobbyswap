@@ -2,7 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Panel, Pill, Screen } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
+import { NotificationItem } from '@/types/models';
+import { ACTION_HISTORY_ROUTE } from '@/utils/routes';
 import { formatDateTime } from '@/utils/date';
+
+function supportsHistory(item: NotificationItem) {
+  return item.type !== 'message' && item.type !== 'safety';
+}
 
 export default function NotificationsScreen() {
   const navigate = useNavigate();
@@ -20,7 +26,7 @@ export default function NotificationsScreen() {
   return (
     <Screen
       title="Notifications"
-      subtitle="Minimal, actionable updates only. The transient popups fade automatically and also live here for reference."
+      subtitle="Action alerts stay readable here, and transaction-related updates can jump straight into your full history."
       action={<Button tone="secondary" onClick={clearAllNotifications}>Clear all</Button>}
     >
       <div className="stack-list">
@@ -37,7 +43,25 @@ export default function NotificationsScreen() {
               <Button tone="secondary" onClick={() => markNotificationRead(item.id)}>
                 Mark read
               </Button>
-              <Button onClick={() => navigate(item.route)}>Open</Button>
+              {supportsHistory(item) ? (
+                <Button
+                  tone="secondary"
+                  onClick={() => {
+                    markNotificationRead(item.id);
+                    navigate(ACTION_HISTORY_ROUTE);
+                  }}
+                >
+                  View history
+                </Button>
+              ) : null}
+              <Button
+                onClick={() => {
+                  markNotificationRead(item.id);
+                  navigate(item.route);
+                }}
+              >
+                Open
+              </Button>
             </div>
           </Panel>
         ))}

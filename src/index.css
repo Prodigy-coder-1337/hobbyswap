@@ -45,6 +45,7 @@ a {
 }
 
 small {
+  font-size: 0.93rem;
   color: var(--muted);
   line-height: 1.5;
 }
@@ -182,7 +183,7 @@ video {
 .screen {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .screen-header,
@@ -206,11 +207,10 @@ video {
   gap: 12px;
 }
 
-.screen-header {
-  align-items: flex-start;
-}
-
 .screen-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -219,14 +219,20 @@ video {
 .credit-card strong,
 .list-card strong,
 .thread-card strong,
-.stat-card strong {
+.stat-card strong,
+.action-card strong {
   margin: 0;
   font-family: 'Sora', sans-serif;
   line-height: 1.18;
 }
 
 .screen h1 {
-  font-size: 1.72rem;
+  font-size: 1.84rem;
+  letter-spacing: -0.03em;
+}
+
+.panel h3 {
+  font-size: 1.2rem;
 }
 
 .screen-subtitle,
@@ -244,6 +250,7 @@ video {
 .rule-list p,
 .escrow-steps p {
   margin: 0;
+  font-size: 0.98rem;
   color: var(--muted);
   line-height: 1.52;
 }
@@ -260,12 +267,28 @@ video {
 
 .panel,
 .empty-state {
-  padding: 18px;
+  padding: 20px;
 }
 
 .clean-card,
 .credit-card {
   padding: 16px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.screen-header {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.panel-header {
+  margin-bottom: 2px;
 }
 
 .panel-copy {
@@ -380,12 +403,14 @@ video {
 
 .text-input {
   width: 100%;
-  min-height: 48px;
+  min-height: 50px;
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.96);
   color: var(--text);
+  font-size: 0.98rem;
+  line-height: 1.4;
 }
 
 .textarea-input {
@@ -641,13 +666,40 @@ video {
   border-radius: 18px;
   color: white;
   box-shadow: 0 14px 32px rgba(16, 33, 32, 0.2);
-  animation: toastIn 220ms ease, toastOut 380ms ease 2.8s forwards;
+  animation: toastIn 220ms ease, toastOut 380ms ease 4.2s forwards;
   pointer-events: auto;
 }
 
 .toast strong,
 .toast p {
   margin: 0;
+}
+
+.toast-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.toast-content-button {
+  align-items: flex-start;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.toast-content-button span:last-child {
+  margin-top: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.92;
 }
 
 .toast-success {
@@ -732,8 +784,69 @@ video {
   gap: 12px;
 }
 
+.action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .contract-card {
   flex-direction: column;
+}
+
+.availability-builder-section,
+.availability-builder,
+.availability-builder-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.availability-builder-section {
+  gap: 10px;
+}
+
+.availability-builder {
+  gap: 12px;
+}
+
+.availability-builder-copy {
+  gap: 4px;
+}
+
+.availability-row {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.74);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.availability-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.availability-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.availability-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .chip-wrap {
@@ -774,13 +887,124 @@ video {
   margin: 24px auto 0;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 18px;
   color: var(--muted);
 }
 
+.marketing-screen {
+  width: min(100%, 460px);
+}
+
+.marketing-stage,
+.marketing-copy,
+.marketing-flow-list,
+.marketing-cta {
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing-core-grid,
+.marketing-mini-board {
+  display: grid;
+}
+
+.marketing-stage {
+  gap: 16px;
+  padding: 22px;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at top right, rgba(216, 108, 66, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(248, 239, 228, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 42px rgba(20, 37, 36, 0.08);
+}
+
+.marketing-copy {
+  gap: 10px;
+}
+
+.marketing-title {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2rem, 7vw, 2.55rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.marketing-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.marketing-flow-list,
+.marketing-core-grid,
+.marketing-mini-board,
+.marketing-cta {
+  gap: 12px;
+}
+
+.marketing-flow-card,
+.marketing-core-card,
+.marketing-mini-card {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.marketing-flow-card,
+.marketing-mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.marketing-flow-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.marketing-step-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.82rem;
+  background: rgba(23, 54, 53, 0.08);
+}
+
+.marketing-cta a {
+  flex: 1 1 0;
+}
+
+.marketing-cta .button {
+  width: 100%;
+}
+
+.marketing-core-card h4 {
+  margin: 0 0 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  line-height: 1.24;
+}
+
+.marketing-core-card p,
+.marketing-mini-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.56;
+}
+
 .quote-stack blockquote {
   margin: 0;
-  padding: 14px;
+  padding: 16px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.76);
   border: 1px solid var(--line);
@@ -965,11 +1189,22 @@ video {
 }
 
 @media (min-width: 680px) {
+  .screen-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
   .hero-grid,
   .feature-grid,
   .split-fields,
   .two-pane,
   .escrow-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .availability-grid,
+  .marketing-core-grid,
+  .marketing-mini-board {
     grid-template-columns: repeat(2, 1fr);
   }
 

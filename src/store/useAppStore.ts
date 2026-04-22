@@ -19,6 +19,7 @@ import {
   User
 } from '@/types/models';
 import { createId } from '@/utils/createId';
+import { ACTION_HISTORY_ROUTE } from '@/utils/routes';
 
 type SignUpPayload = {
   realName: string;
@@ -133,8 +134,10 @@ function cloneSeed(): AppData {
   return JSON.parse(JSON.stringify(seedData)) as AppData;
 }
 
-function toast(message: string, tone: Toast['tone'] = 'success'): Toast {
-  return { id: createId('toast'), tone, message };
+type ToastOptions = Pick<Toast, 'actionLabel' | 'route' | 'title'>;
+
+function toast(message: string, tone: Toast['tone'] = 'success', options: ToastOptions = {}): Toast {
+  return { id: createId('toast'), tone, message, ...options };
 }
 
 function notification(
@@ -164,8 +167,13 @@ function updateUser(users: User[], userId: string, updater: (user: User) => User
   return users.map((user) => (user.id === userId ? updater(user) : user));
 }
 
-function addToast(state: AppState, message: string, tone: Toast['tone'] = 'success') {
-  return [toast(message, tone), ...state.toasts].slice(0, 4);
+function addToast(
+  state: AppState,
+  message: string,
+  tone: Toast['tone'] = 'success',
+  options: ToastOptions = {}
+) {
+  return [toast(message, tone, options), ...state.toasts].slice(0, 4);
 }
 
 function nextIso(days: number, hour = 10) {
@@ -570,12 +578,14 @@ export const useAppStore = create<AppState>()(
           return;
         }
 
+        const listingTitle = payload.title.trim() || 'Untitled listing';
+
         set((state) => ({
           listings: [
             {
               id: createId('listing'),
               ownerId: currentUser.id,
-              title: payload.title,
+              title: listingTitle,
               description: payload.description,
               category: payload.intent === 'workshop' ? 'Workshop' : 'Teacher Listing',
               hobbyId: payload.hobbyId,
@@ -601,7 +611,25 @@ export const useAppStore = create<AppState>()(
             },
             ...state.listings
           ],
-          toasts: addToast(state, 'Listing published.')
+          notifications: [
+            notification(
+              currentUser.id,
+              'listing',
+              'Listing published',
+              `${listingTitle} is now live and ready for bookings or swap offers.`,
+              ACTION_HISTORY_ROUTE
+            ),
+            ...state.notifications
+          ],
+          toasts: addToast(
+            state,
+            'Listing published. You can open your full activity trail from here.',
+            'success',
+            {
+              title: 'Listing live',
+              route: ACTION_HISTORY_ROUTE
+            }
+          )
         }));
       },
       createSwapAgreement: (payload) => {
@@ -654,11 +682,26 @@ export const useAppStore = create<AppState>()(
               payload.equalSwap
                 ? 'This swap is clearly labeled as equal, so no credits are needed.'
                 : 'A credit-based swap agreement is ready for review.',
-              '/app/log'
+              ACTION_HISTORY_ROUTE
+            ),
+            notification(
+              currentUser.id,
+              'contract',
+              'Swap agreement created',
+              `Your ${payload.equalSwap ? 'equal' : 'credit-based'} swap is now part of your activity history.`,
+              ACTION_HISTORY_ROUTE
             ),
             ...state.notifications
           ],
-          toasts: addToast(state, 'Swap agreement created.')
+          toasts: addToast(
+            state,
+            'Swap agreement created. Tap to review the full action history.',
+            'success',
+            {
+              title: 'Swap ready',
+              route: ACTION_HISTORY_ROUTE
+            }
+          )
         }));
       },
       bookSession: (payload) => {
@@ -797,20 +840,28 @@ export const useAppStore = create<AppState>()(
                 payload.paymentMethod === 'Credits'
                   ? `${currentUser.displayName} booked ${listing.title} with credits held in escrow.`
                   : `${currentUser.displayName} booked ${listing.title}. Cash is being held in escrow.`,
-                '/app/log'
+                ACTION_HISTORY_ROUTE
               ),
               notification(
                 currentUser.id,
-                'credits',
+                payload.paymentMethod === 'Credits' ? 'credits' : 'payment',
                 payload.paymentMethod === 'Credits' ? 'Credits held in escrow' : 'Booking confirmed',
                 payload.paymentMethod === 'Credits'
                   ? `${creditAmount} credits are being held until the session is confirmed complete.`
                   : `You paid ${cashAmountPhp} PHP. The teacher receives ${teacherNetPhp} PHP after the 9% platform fee.`,
-                '/app/log'
+                ACTION_HISTORY_ROUTE
               ),
               ...state.notifications
             ],
-            toasts: addToast(state, 'Booking confirmed. Review the breakdown in Swap Log.')
+            toasts: addToast(
+              state,
+              'Booking confirmed. Tap to open the full payment and action history.',
+              'success',
+              {
+                title: payload.paymentMethod === 'Credits' ? 'Credits held' : 'Payment recorded',
+                route: ACTION_HISTORY_ROUTE
+              }
+            )
           };
         });
       },
@@ -888,11 +939,28 @@ export const useAppStore = create<AppState>()(
                 finished
                   ? 'The session is complete. Reviews can now release final rewards or payout scheduling.'
                   : 'One session was marked complete.',
-                '/app/log'
+                ACTION_HISTORY_ROUTE
+              ),
+              notification(
+                currentUser.id,
+                'contract',
+                finished ? 'Session complete' : 'Session progress updated',
+                finished
+                  ? 'Your completed session now appears in the action history with the payout and review steps.'
+                  : 'The session progress was added to your action history.',
+                ACTION_HISTORY_ROUTE
               ),
               ...state.notifications
             ],
-            toasts: addToast(state, finished ? 'Session complete. Review is ready.' : 'Progress updated.')
+            toasts: addToast(
+              state,
+              finished ? 'Session complete. Review is ready.' : 'Progress updated.',
+              'success',
+              {
+                title: finished ? 'Session finished' : 'Progress saved',
+                route: ACTION_HISTORY_ROUTE
+              }
+            )
           };
         });
       },
@@ -974,16 +1042,31 @@ export const useAppStore = create<AppState>()(
             notifications: [
               notification(
                 targetUserId,
-                'credits',
+                rating === 5 ? 'credits' : 'review',
                 rating === 5 ? 'You earned a review bonus' : 'New review received',
                 rating === 5
                   ? 'A 5-star review added +5 credits to your balance.'
                   : 'A new review was added to your profile.',
-                '/app/profile'
+                ACTION_HISTORY_ROUTE
+              ),
+              notification(
+                currentUser.id,
+                'review',
+                'Review sent',
+                'Your review was added to the shared action history for this exchange.',
+                ACTION_HISTORY_ROUTE
               ),
               ...state.notifications
             ],
-            toasts: addToast(state, rating === 5 ? 'Review sent and bonus applied.' : 'Review sent.')
+            toasts: addToast(
+              state,
+              rating === 5 ? 'Review sent and bonus applied.' : 'Review sent.',
+              'success',
+              {
+                title: 'Review saved',
+                route: ACTION_HISTORY_ROUTE
+              }
+            )
           };
         });
       },
@@ -1002,7 +1085,10 @@ export const useAppStore = create<AppState>()(
                 }
               : challenge
           ),
-          toasts: addToast(state, 'Challenge joined.')
+          toasts: addToast(state, 'Challenge joined.', 'success', {
+            title: 'Challenge added',
+            route: ACTION_HISTORY_ROUTE
+          })
         }));
       },
       advanceChallenge: (challengeId) => {
@@ -1063,7 +1149,12 @@ export const useAppStore = create<AppState>()(
               state,
               completedNow
                 ? `Challenge completed. +${challenge.creditReward} credits added.`
-                : 'Challenge progress updated.'
+                : 'Challenge progress updated.',
+              'success',
+              {
+                title: completedNow ? 'Challenge reward added' : 'Challenge updated',
+                route: ACTION_HISTORY_ROUTE
+              }
             )
           };
         });
@@ -1089,7 +1180,10 @@ export const useAppStore = create<AppState>()(
             },
             ...state.resources
           ],
-          toasts: addToast(state, 'Resource added to your library.')
+          toasts: addToast(state, 'Resource added to your library.', 'success', {
+            title: 'Resource saved',
+            route: ACTION_HISTORY_ROUTE
+          })
         }));
       },
       startConversation: (partnerId, contractId) => {

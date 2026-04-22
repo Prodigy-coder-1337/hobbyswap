@@ -434,11 +434,13 @@ export function ToastStack({
   items: Toast[];
   onDismiss: (id: string) => void;
 }) {
+  const navigate = useNavigate();
+
   useEffect(() => {
     const timers = items.map((item) =>
       window.setTimeout(() => {
         onDismiss(item.id);
-      }, 3200)
+      }, 4800)
     );
 
     return () => {
@@ -450,10 +452,27 @@ export function ToastStack({
     <div className="toast-stack" aria-live="polite">
       {items.slice(0, 2).map((item) => (
         <div className={`toast toast-${item.tone}`} key={item.id}>
-          <div>
-            <strong>Update</strong>
-            <p>{item.message}</p>
-          </div>
+          {item.route ? (
+            <button
+              className="toast-content toast-content-button"
+              onClick={() => {
+                navigate(item.route!);
+                onDismiss(item.id);
+              }}
+              type="button"
+            >
+              <div>
+                <strong>{item.title ?? 'Update'}</strong>
+                <p>{item.message}</p>
+              </div>
+              <span>{item.actionLabel ?? 'View history'}</span>
+            </button>
+          ) : (
+            <div className="toast-content">
+              <strong>{item.title ?? 'Update'}</strong>
+              <p>{item.message}</p>
+            </div>
+          )}
           <button className="toast-close" onClick={() => onDismiss(item.id)} type="button">
             <X size={14} />
           </button>

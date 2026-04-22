@@ -9,9 +9,12 @@ export type NotificationType =
   | 'swap-request'
   | 'challenge'
   | 'event'
+  | 'listing'
   | 'message'
   | 'contract'
+  | 'review'
   | 'safety'
+  | 'payment'
   | 'credits';
 export type ReportCategory =
   | 'Safety concern'
@@ -318,6 +321,9 @@ export interface Toast {
   id: string;
   tone: 'success' | 'warning' | 'error';
   message: string;
+  title?: string;
+  route?: string;
+  actionLabel?: string;
 }
 
 export interface TutorialStep {
