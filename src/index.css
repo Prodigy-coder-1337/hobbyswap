@@ -1328,8 +1328,9 @@ video {
   inset: 0;
   z-index: 40;
   display: flex;
-  align-items: flex-end;
-  padding: 16px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(84px + env(safe-area-inset-top)) 16px 16px;
 }
 
 .tutorial-highlight,
@@ -1366,6 +1367,8 @@ video {
   z-index: 1;
   width: 100%;
   gap: 10px;
+  max-height: min(42vh, 280px);
+  overflow: auto;
   padding: 16px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.82);
@@ -1385,6 +1388,215 @@ video {
 
 .tutorial-card .button {
   flex: 1 1 132px;
+}
+
+.thread-list,
+.thread-row,
+.thread-row-main,
+.message-thread-header,
+.message-thread-profile,
+.message-thread-meta,
+.message-thread-tools,
+.quick-boundary-list,
+.message-composer,
+.image-preview-card,
+.message-meta {
+  display: flex;
+}
+
+.thread-list,
+.thread-row-main,
+.message-thread-meta,
+.quick-boundary-list,
+.image-preview-card {
+  flex-direction: column;
+}
+
+.thread-list {
+  gap: 10px;
+}
+
+.thread-row {
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  text-align: left;
+}
+
+.thread-row-main {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 4px;
+}
+
+.thread-row-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.thread-row-preview,
+.message-thread-meta p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.thread-row-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-row-time {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.message-thread-header {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.thread-back-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 0;
+}
+
+.message-thread-profile {
+  align-items: center;
+  gap: 12px;
+}
+
+.message-thread-meta {
+  gap: 3px;
+}
+
+.message-thread-tools {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.thread-tool {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+}
+
+.thread-tool.danger {
+  color: var(--danger);
+  border-color: rgba(210, 90, 77, 0.24);
+}
+
+.chatbox {
+  max-height: 44vh;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.message-image {
+  width: min(220px, 100%);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 8px;
+}
+
+.message-meta {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.quick-boundary-list {
+  gap: 8px;
+}
+
+.quick-boundary-list .chip {
+  width: 100%;
+  text-align: left;
+}
+
+.image-preview-card {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.image-preview-card img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.message-composer {
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.composer-file-input {
+  display: none;
+}
+
+.composer-attach,
+.composer-send {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  border: none;
+}
+
+.composer-attach {
+  background: rgba(23, 54, 53, 0.08);
+  color: var(--text);
+}
+
+.composer-send {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+}
+
+.composer-send:disabled {
+  opacity: 0.42;
+}
+
+.composer-input {
+  min-height: 42px;
+  max-height: 120px;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  padding: 10px 0 6px;
 }
 
 @keyframes tutorialArrow {

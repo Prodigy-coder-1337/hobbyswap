@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, ModalSheet, Panel, Pill, ProgressBar, Screen, Segments } from '@/components/ui';
+import { Avatar, Button, ModalSheet, Panel, Pill, ProgressBar, Screen, Segments } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
 import { formatDate, formatDateTime } from '@/utils/date';
@@ -14,6 +14,8 @@ export default function DashboardScreen() {
   const listings = useAppStore((state) => state.listings);
   const contracts = useAppStore((state) => state.contracts);
   const challenges = useAppStore((state) => state.challenges);
+  const threads = useAppStore((state) => state.threads);
+  const users = useAppStore((state) => state.users);
   const startConversation = useAppStore((state) => state.startConversation);
   const [filter, setFilter] = useState<IntentFilter>('All');
   const [showCredits, setShowCredits] = useState(false);
@@ -65,6 +67,25 @@ export default function DashboardScreen() {
       })
       .slice(0, 4);
   }, [listings, currentUser, filter]);
+
+  const recentThreads = useMemo(() => {
+    if (!currentUser) {
+      return [];
+    }
+
+    return threads
+      .filter((thread) => thread.participantIds.includes(currentUser.id))
+      .sort((left, right) => {
+        const leftTime = left.messages.at(-1)?.createdAt
+          ? new Date(left.messages.at(-1)!.createdAt).getTime()
+          : 0;
+        const rightTime = right.messages.at(-1)?.createdAt
+          ? new Date(right.messages.at(-1)!.createdAt).getTime()
+          : 0;
+        return rightTime - leftTime;
+      })
+      .slice(0, 2);
+  }, [threads, currentUser]);
 
   const weeklyChallenge = challenges.find((challenge) => !challenge.archived);
   const challengeProgress = currentUser && weeklyChallenge ? weeklyChallenge.userProgress[currentUser.id] ?? 0 : 0;
@@ -126,6 +147,61 @@ export default function DashboardScreen() {
             </Button>
           </div>
         )}
+      </Panel>
+
+      <Panel eyebrow="Inbox" title="Messages">
+        {recentThreads.length ? (
+          <div className="thread-list">
+            {recentThreads.map((thread) => {
+              const partner = users.find(
+                (user) => thread.participantIds.includes(user.id) && user.id !== currentUser.id
+              );
+              const lastMessage = thread.messages.at(-1);
+              const partnerLabel = thread.aliasMode ? partner?.anonymousAlias : partner?.displayName;
+
+              return partner ? (
+                <button
+                  className="thread-row"
+                  key={thread.id}
+                  onClick={() => navigate(`/app/messages?thread=${thread.id}`)}
+                  type="button"
+                >
+                  <Avatar color={partner.avatar} label={partnerLabel ?? partner.displayName} />
+                  <div className="thread-row-main">
+                    <div className="thread-row-meta">
+                      <strong>{partnerLabel}</strong>
+                      <span className="thread-row-time">
+                        {lastMessage
+                          ? new Intl.DateTimeFormat('en-PH', {
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            }).format(new Date(lastMessage.createdAt))
+                          : 'New'}
+                      </span>
+                    </div>
+                    <p className="thread-row-preview">
+                      {lastMessage
+                        ? lastMessage.imageUrl
+                          ? lastMessage.body
+                            ? `Photo • ${lastMessage.body}`
+                            : 'Sent an image'
+                          : lastMessage.body
+                        : 'Tap to open the chat.'}
+                    </p>
+                  </div>
+                </button>
+              ) : null;
+            })}
+          </div>
+        ) : (
+          <p>Message sellers, teachers, and swap partners without leaving the app.</p>
+        )}
+        <div className="button-row">
+          <Button onClick={() => navigate('/app/messages')}>Open messages</Button>
+          <Button tone="secondary" onClick={() => navigate('/app/discover')}>
+            Find people
+          </Button>
+        </div>
       </Panel>
 
       <Panel eyebrow="Recommendations" title="Personalized by intent">

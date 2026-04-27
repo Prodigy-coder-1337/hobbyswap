@@ -274,6 +274,7 @@ export interface MessageItem {
   body: string;
   createdAt: string;
   quickBoundary?: boolean;
+  imageUrl?: string;
 }
 
 export interface MessageThread {

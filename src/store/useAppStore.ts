@@ -122,7 +122,7 @@ interface AppState extends AppData {
   advanceChallenge: (challengeId: string) => void;
   addResourceItem: (payload: ResourcePayload) => void;
   startConversation: (partnerId: string, contractId?: string) => string;
-  sendMessage: (threadId: string, body: string, quickBoundary?: boolean) => void;
+  sendMessage: (threadId: string, body: string, quickBoundary?: boolean, imageUrl?: string) => void;
   muteThread: (threadId: string) => void;
   blockUser: (userId: string) => void;
   createReport: (payload: ReportPayload) => void;
@@ -1249,31 +1249,38 @@ export const useAppStore = create<AppState>()(
         }));
         return threadId;
       },
-      sendMessage: (threadId, body, quickBoundary) => {
+      sendMessage: (threadId, body, quickBoundary, imageUrl) => {
         const currentUser = currentUserFrom(get());
-        if (!currentUser || !body.trim()) {
+        const trimmedBody = body.trim();
+        if (!currentUser || (!trimmedBody && !imageUrl)) {
           return;
         }
 
-        set((state) => ({
-          threads: state.threads.map((thread) =>
-            thread.id === threadId
-              ? {
-                  ...thread,
-                  messages: [
-                    ...thread.messages,
-                    {
-                      id: createId('msg'),
-                      senderId: currentUser.id,
-                      body,
-                      createdAt: new Date().toISOString(),
-                      quickBoundary
-                    }
-                  ]
-                }
-              : thread
-          )
-        }));
+        set((state) => {
+          const currentThread = state.threads.find((thread) => thread.id === threadId);
+          if (!currentThread) {
+            return state;
+          }
+
+          const updatedThread = {
+            ...currentThread,
+            messages: [
+              ...currentThread.messages,
+              {
+                id: createId('msg'),
+                senderId: currentUser.id,
+                body: trimmedBody,
+                createdAt: new Date().toISOString(),
+                quickBoundary,
+                imageUrl
+              }
+            ]
+          };
+
+          return {
+            threads: [updatedThread, ...state.threads.filter((thread) => thread.id !== threadId)]
+          };
+        });
       },
       muteThread: (threadId) => {
         const currentUser = currentUserFrom(get());

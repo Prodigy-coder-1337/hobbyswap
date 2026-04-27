@@ -110,7 +110,6 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
             tone="secondary"
             onClick={() => {
               completeGuide();
-              navigate('/');
             }}
           >
             Skip for now
@@ -126,7 +125,6 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
             <Button
               onClick={() => {
                 completeGuide();
-                navigate('/app/home');
               }}
             >
               Finish
