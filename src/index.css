@@ -1188,6 +1188,215 @@ video {
   }
 }
 
+.auth-visual-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+}
+
+.auth-visual-grid img {
+  height: 148px;
+  object-fit: cover;
+  border-radius: 22px;
+  box-shadow: 0 10px 24px rgba(20, 37, 36, 0.08);
+}
+
+.auth-visual-grid img:first-child {
+  height: 196px;
+}
+
+.listing-card {
+  flex-direction: column;
+}
+
+.listing-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.listing-card-copy,
+.listing-card-actions,
+.hobby-picker,
+.hobby-picker-dropdown,
+.hobby-picker-option,
+.tutorial-card,
+.tutorial-card-top {
+  display: flex;
+}
+
+.listing-card-copy,
+.listing-card-actions,
+.hobby-picker,
+.hobby-picker-dropdown,
+.tutorial-card {
+  flex-direction: column;
+}
+
+.listing-card-copy {
+  gap: 6px;
+}
+
+.listing-card-actions {
+  gap: 10px;
+}
+
+.listing-card-actions .button {
+  width: 100%;
+}
+
+.hobby-picker {
+  gap: 12px;
+}
+
+.hobby-picker-trigger {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.hobby-picker-trigger span:last-child {
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.hobby-picker-dropdown {
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.hobby-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.hobby-picker-option {
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  text-align: left;
+}
+
+.hobby-picker-option.active {
+  border-color: rgba(216, 108, 66, 0.44);
+  background: rgba(255, 246, 239, 0.98);
+}
+
+.hobby-picker-option-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hobby-picker-check {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(23, 54, 53, 0.08);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.tutorial-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+
+.tutorial-highlight,
+.tutorial-arrow {
+  position: absolute;
+}
+
+.tutorial-highlight {
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 0 0 999px rgba(13, 21, 21, 0.48),
+    0 0 0 10px rgba(216, 108, 66, 0.18),
+    0 18px 32px rgba(10, 19, 19, 0.28);
+  pointer-events: none;
+}
+
+.tutorial-arrow {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 10px 24px rgba(216, 108, 66, 0.32);
+  animation: tutorialArrow 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.tutorial-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: rgba(255, 252, 247, 0.97);
+  box-shadow: 0 18px 40px rgba(10, 19, 19, 0.18);
+}
+
+.tutorial-card-top {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tutorial-card .button-row {
+  flex-wrap: wrap;
+}
+
+.tutorial-card .button {
+  flex: 1 1 132px;
+}
+
+@keyframes tutorialArrow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
 @media (min-width: 680px) {
   .screen-header {
     flex-direction: row;
@@ -1204,7 +1413,8 @@ video {
 
   .availability-grid,
   .marketing-core-grid,
-  .marketing-mini-board {
+  .marketing-mini-board,
+  .auth-visual-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 

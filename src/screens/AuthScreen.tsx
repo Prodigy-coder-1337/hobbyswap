@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Field, Panel, Pill, Screen, Segments, TextInput } from '@/components/ui';
 import { useAppStore } from '@/store/useAppStore';
-import { validateEmailOrPhone, validateName, validatePassword, validateRequired } from '@/utils/validators';
+import { validateEmailOrPhone, validateName, validatePassword } from '@/utils/validators';
 import { detectNearestGeoPoint } from '@/utils/location';
 
 const ageGroups = ['18-24', '25-34', '35-44', '45+'] as const;

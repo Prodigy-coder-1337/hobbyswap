@@ -43,7 +43,18 @@ export default function SettingsScreen() {
       <Panel eyebrow="Privacy" title="Control your visibility">
         <Toggle checked={currentUser.privacy.showRealName} label="Show real name on profile" onChange={(value) => updatePrivacy({ showRealName: value })} />
         <Toggle checked={currentUser.privacy.showExactLocation} label="Show barangay-level location" onChange={(value) => updatePrivacy({ showExactLocation: value })} />
-        <Toggle checked={currentUser.anonymousMode} label="Anonymous mode for early interactions" onChange={(value) => updateProfile({ anonymousMode: value })} />
+        <Toggle
+          checked={currentUser.anonymousMode}
+          label="Anonymous mode for early interactions"
+          onChange={(value) =>
+            updateProfile({
+              anonymousMode: value,
+              displayName: value
+                ? currentUser.anonymousAlias
+                : currentUser.realName.split(' ')[0] || currentUser.realName || currentUser.displayName
+            })
+          }
+        />
         <Field label="Profile visibility">
           <select className="text-input" value={currentUser.privacy.visibility} onChange={(event) => updatePrivacy({ visibility: event.target.value as 'Community' | 'Matches Only' | 'Private' })}>
             <option value="Community">Community</option>

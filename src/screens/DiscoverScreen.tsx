@@ -112,7 +112,7 @@ export default function DiscoverScreen() {
       action={<Pill tone="teal">{visible.length} nearby</Pill>}
     >
       <Panel>
-        <SearchField value={query} onChange={setQuery} placeholder="Search by skill, teacher, or city" />
+        <SearchField value={query} onChange={setQuery} placeholder="Search skills, items, or city" />
         <Segments
           value={tab}
           options={['All', 'Swaps', 'Teachers', 'Workshops', 'Items']}
@@ -132,13 +132,13 @@ export default function DiscoverScreen() {
         <Panel eyebrow="Nearby options" title="List view">
           <div className="stack-list">
             {visible.map(({ listing, distance }) => (
-              <article className="list-card clean-card" key={listing.id}>
+              <article className="list-card clean-card listing-card" key={listing.id}>
                 <img
                   alt={listing.title}
                   className="listing-thumb"
                   src={listing.photos[0]}
                 />
-                <div>
+                <div className="listing-card-copy">
                   <span className="card-label" style={{ color: intentColors[listing.intent] }}>
                     {listing.intent === 'teach'
                       ? 'Teacher'
@@ -154,7 +154,7 @@ export default function DiscoverScreen() {
                     {listing.ratingAverage.toFixed(1)} rating • {distance.toFixed(1)} km • {dualPrice(listing)}
                   </small>
                 </div>
-                <div className="button-column">
+                <div className="button-column listing-card-actions">
                   {listing.intent === 'item' ? (
                     <Button
                       onClick={() => {
@@ -190,8 +190,8 @@ export default function DiscoverScreen() {
 
       <div className="sticky-nudge">
         <div>
-          <strong>Are you a teacher?</strong>
-          <p>Create a listing and set free, credits, cash, or dual pricing.</p>
+          <strong>Ready to teach or sell?</strong>
+          <p>List a session, workshop, or item in a few taps.</p>
         </div>
         <Button onClick={() => navigate('/app/new', { state: { mode: 'Create listing' } })}>
           Create a listing

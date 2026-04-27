@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AvailabilityBuilder,
   createAvailabilitySlot,
-  formatAvailabilitySlot,
-  type AvailabilitySlot
+  formatAvailabilitySlot
 } from '@/components/AvailabilityBuilder';
 import {
   Button,

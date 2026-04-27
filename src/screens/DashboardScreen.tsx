@@ -120,9 +120,9 @@ export default function DashboardScreen() {
           </div>
         ) : (
           <div className="button-row">
-            <Button onClick={() => navigate('/app/new')}>Plan a new swap</Button>
+            <Button onClick={() => navigate('/app/new')}>Plan a swap</Button>
             <Button tone="secondary" onClick={() => navigate('/app/discover')}>
-              Browse teachers
+              Browse listings
             </Button>
           </div>
         )}
@@ -136,17 +136,19 @@ export default function DashboardScreen() {
         />
         <div className="stack-list">
           {recommendations.map((listing) => (
-            <article className="list-card clean-card" key={listing.id}>
+            <article className="list-card clean-card listing-card" key={listing.id}>
               <img alt={listing.title} className="listing-thumb" src={listing.photos[0]} />
-              <div>
+              <div className="listing-card-copy">
                 <span className="card-label">{listing.intent}</span>
                 <strong>{listing.title}</strong>
                 <p>{listing.description}</p>
                 <small>
-                  {listing.ratingAverage.toFixed(1)} rating • {listing.completedSessions} completed sessions • {dualPrice(listing)}
+                  {listing.intent === 'item'
+                    ? `${dualPrice(listing)} • ${listing.location.city}`
+                    : `${listing.ratingAverage.toFixed(1)} rating • ${listing.completedSessions} completed sessions • ${dualPrice(listing)}`}
                 </small>
               </div>
-              <div className="button-column">
+              <div className="button-column listing-card-actions">
                 {listing.intent === 'item' ? (
                   <Button
                     onClick={() => {

@@ -440,7 +440,9 @@ export const useAppStore = create<AppState>()(
           quickMatches: buildQuickMatches(
             {
               ...currentUser,
-              displayName: payload.anonymousMode ? currentUser.anonymousAlias : currentUser.displayName,
+              displayName: payload.anonymousMode
+                ? currentUser.anonymousAlias
+                : payload.displayName.trim() || currentUser.displayName,
               hobbyProfiles: payload.hobbyProfiles,
               availability: payload.availability,
               preferredFormats: payload.preferredFormats
