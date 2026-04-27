@@ -325,7 +325,12 @@ export function BottomNav() {
           const Icon = tab.icon;
           const active = location.pathname.startsWith(tab.to);
           return (
-            <Link className={`bottom-nav-link ${active ? 'active' : ''}`} key={tab.to} to={tab.to}>
+            <Link
+              className={`bottom-nav-link ${active ? 'active' : ''}`}
+              data-tutorial-target={tab.to === '/app/discover' ? 'discover' : undefined}
+              key={tab.to}
+              to={tab.to}
+            >
               <Icon size={18} />
               <span>{tab.label}</span>
             </Link>
@@ -333,7 +338,11 @@ export function BottomNav() {
         })}
       </div>
 
-      <Link className={`bottom-nav-plus ${location.pathname.startsWith('/app/new') ? 'active' : ''}`} to="/app/new">
+      <Link
+        className={`bottom-nav-plus ${location.pathname.startsWith('/app/new') ? 'active' : ''}`}
+        data-tutorial-target="new"
+        to="/app/new"
+      >
         <CirclePlus size={24} />
       </Link>
 
@@ -342,7 +351,12 @@ export function BottomNav() {
           const Icon = tab.icon;
           const active = location.pathname.startsWith(tab.to);
           return (
-            <Link className={`bottom-nav-link ${active ? 'active' : ''}`} key={tab.to} to={tab.to}>
+            <Link
+              className={`bottom-nav-link ${active ? 'active' : ''}`}
+              data-tutorial-target={tab.to === '/app/challenges' ? 'challenges' : tab.to === '/app/profile' ? 'profile' : undefined}
+              key={tab.to}
+              to={tab.to}
+            >
               <Icon size={18} />
               <span>{tab.label}</span>
             </Link>
@@ -381,13 +395,16 @@ export function TopBar() {
         <Link className="icon-button" to="/app/notifications">
           <Bell size={18} />
         </Link>
+        <Link className="icon-button" data-tutorial-target="log" to="/app/log">
+          <ScrollText size={18} />
+        </Link>
         <Link className="icon-button" to="/app/settings">
           <Settings size={18} />
         </Link>
       </div>
     ) : pathname.startsWith('/app/home') || pathname.startsWith('/app/new') ? (
       <div className="top-actions">
-        <Link className="icon-button" to="/app/log">
+        <Link className="icon-button" data-tutorial-target="log" to="/app/log">
           <WalletCards size={18} />
         </Link>
         <Link className="icon-button" to="/app/notifications">
@@ -396,7 +413,7 @@ export function TopBar() {
       </div>
     ) : (
       <div className="top-actions">
-        <Link className="icon-button" to="/app/log">
+        <Link className="icon-button" data-tutorial-target="log" to="/app/log">
           <ScrollText size={18} />
         </Link>
         <Link className="icon-button" to="/app/notifications">

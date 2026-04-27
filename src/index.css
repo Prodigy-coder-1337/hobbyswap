@@ -423,7 +423,7 @@ video {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 14px;
+  padding: 12px 14px;
   text-align: left;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid var(--line);
@@ -435,8 +435,8 @@ video {
 }
 
 .toggle {
-  width: 52px;
-  height: 30px;
+  width: 48px;
+  height: 28px;
   border-radius: 999px;
   background: rgba(23, 54, 53, 0.12);
   padding: 3px;
@@ -444,8 +444,8 @@ video {
 
 .toggle span {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: white;
   transition: transform 180ms ease;
@@ -456,7 +456,7 @@ video {
 }
 
 .toggle.is-on span {
-  transform: translateX(22px);
+  transform: translateX(20px);
 }
 
 .stats-grid,

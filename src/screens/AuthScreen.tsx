@@ -1,8 +1,9 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Field, Panel, Screen, Segments, TextInput } from '@/components/ui';
+import { Button, Field, Panel, Pill, Screen, Segments, TextInput } from '@/components/ui';
 import { useAppStore } from '@/store/useAppStore';
 import { validateEmailOrPhone, validateName, validatePassword, validateRequired } from '@/utils/validators';
+import { detectNearestGeoPoint } from '@/utils/location';
 
 const ageGroups = ['18-24', '25-34', '35-44', '45+'] as const;
 
@@ -18,21 +19,68 @@ export default function AuthScreen() {
     name: '',
     identifier: '',
     password: '',
-    barangay: '',
-    city: 'Makati',
-    ageGroup: '25-34'
+    ageGroup: '25-34',
+    anonymousMode: false
+  });
+  const [locationState, setLocationState] = useState<{
+    loading: boolean;
+    error: string;
+    label: string;
+    geoPoint: Awaited<ReturnType<typeof detectNearestGeoPoint>> | null;
+  }>({
+    loading: false,
+    error: '',
+    label: 'Waiting for GPS permission',
+    geoPoint: null
   });
 
   const errors = useMemo(
     () => ({
-      name: mode === 'Sign Up' ? validateName(form.name) : '',
+      name: mode === 'Sign Up' && !form.anonymousMode ? validateName(form.name) : '',
       identifier: validateEmailOrPhone(form.identifier),
-      password: validatePassword(form.password),
-      barangay: mode === 'Sign Up' ? validateRequired(form.barangay, 'Barangay') : '',
-      city: mode === 'Sign Up' ? validateRequired(form.city, 'City') : ''
+      password: validatePassword(form.password)
     }),
     [form, mode]
   );
+
+  useEffect(() => {
+    if (mode !== 'Sign Up' || locationState.loading || locationState.geoPoint) {
+      return;
+    }
+
+    void requestLocation();
+  }, [locationState.geoPoint, locationState.loading, mode]);
+
+  async function requestLocation() {
+    setLocationState((state) => ({
+      ...state,
+      loading: true,
+      error: '',
+      label: 'Detecting your location...'
+    }));
+
+    try {
+      const geoPoint = await detectNearestGeoPoint();
+      setLocationState({
+        loading: false,
+        error: '',
+        label: `${geoPoint.barangay}, ${geoPoint.city}`,
+        geoPoint
+      });
+    } catch {
+      setLocationState({
+        loading: false,
+        error: 'Location permission was not available, so we will keep a gentle Metro Manila default.',
+        label: 'Approximate Metro Manila location',
+        geoPoint: {
+          barangay: 'Poblacion',
+          city: 'Makati',
+          lat: 14.5656,
+          lng: 121.0292
+        }
+      });
+    }
+  }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -43,7 +91,7 @@ export default function AuthScreen() {
         const user = useAppStore.getState().users.find(
           (entry) => entry.id === useAppStore.getState().currentUserId
         );
-        navigate(user?.onboardingComplete ? (user.guideCompleted ? '/app/home' : '/app/guide') : '/onboarding');
+        navigate(user?.onboardingComplete ? '/app/home' : '/onboarding');
       }
       return;
     }
@@ -56,8 +104,8 @@ export default function AuthScreen() {
       realName: form.name,
       identifier: form.identifier,
       password: form.password,
-      barangay: form.barangay,
-      city: form.city,
+      anonymousMode: form.anonymousMode,
+      location: locationState.geoPoint,
       ageGroup: form.ageGroup as (typeof ageGroups)[number]
     });
 
@@ -69,13 +117,21 @@ export default function AuthScreen() {
   return (
     <div className="auth-shell">
       <Screen
-        title={mode === 'Sign Up' ? 'Start your first swap week' : 'Welcome back to your hobby circle'}
+        title={mode === 'Sign Up' ? 'Start your first swap week' : 'Welcome back'}
         subtitle={
           mode === 'Sign Up'
-            ? 'Create an account, then we will build your personalized dashboard through a quick onboarding quiz.'
-            : 'Use the demo account `mika@hobbyswap.app` / `HobbySwap9` if you want to explore immediately.'
+            ? 'Short setup, GPS location, then you are inside.'
+            : 'Use `mika@hobbyswap.app` / `HobbySwap9` if you want to explore fast.'
         }
+        action={mode === 'Sign Up' ? <Pill tone="warm">Mobile-first setup</Pill> : null}
       >
+        <Panel eyebrow="What you can do" title="Swap, list items, or join workshops">
+          <div className="auth-visual-grid">
+            <img alt="People trading creative supplies" src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&q=80" />
+            <img alt="Creative hobby tools and notebooks" src="https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=900&q=80" />
+          </div>
+        </Panel>
+
         <Panel>
           <Segments
             value={mode}
@@ -85,13 +141,29 @@ export default function AuthScreen() {
 
           <form className="form-stack" onSubmit={onSubmit}>
             {mode === 'Sign Up' ? (
-              <Field error={errors.name} label="Full name">
-                <TextInput
-                  placeholder="Mikaela Santos"
-                  value={form.name}
-                  onChange={(event) => setForm((state) => ({ ...state, name: event.target.value }))}
-                />
-              </Field>
+              <>
+                <Field hint="Turn this on if you want to start with an alias instead." label="Anonymous mode">
+                  <Segments
+                    value={form.anonymousMode ? 'On' : 'Off'}
+                    options={['Off', 'On']}
+                    onChange={(next) =>
+                      setForm((state) => ({
+                        ...state,
+                        anonymousMode: next === 'On'
+                      }))
+                    }
+                  />
+                </Field>
+                {!form.anonymousMode ? (
+                  <Field error={errors.name} label="Full name">
+                    <TextInput
+                      placeholder="Mikaela Santos"
+                      value={form.name}
+                      onChange={(event) => setForm((state) => ({ ...state, name: event.target.value }))}
+                    />
+                  </Field>
+                ) : null}
+              </>
             ) : null}
 
             <Field
@@ -117,23 +189,15 @@ export default function AuthScreen() {
 
             {mode === 'Sign Up' ? (
               <>
-                <div className="split-fields">
-                  <Field error={errors.barangay} label="Barangay">
-                    <TextInput
-                      placeholder="Poblacion"
-                      value={form.barangay}
-                      onChange={(event) => setForm((state) => ({ ...state, barangay: event.target.value }))}
-                    />
-                  </Field>
-                  <Field error={errors.city} label="City">
-                    <TextInput
-                      placeholder="Makati"
-                      value={form.city}
-                      onChange={(event) => setForm((state) => ({ ...state, city: event.target.value }))}
-                    />
-                  </Field>
-                </div>
-
+                <Panel eyebrow="Location" title="GPS autofill">
+                  <div className="button-row">
+                    <Pill tone="teal">{locationState.label}</Pill>
+                    <Button tone="secondary" onClick={() => void requestLocation()}>
+                      Refresh GPS
+                    </Button>
+                  </div>
+                  {locationState.error ? <p className="field-hint">{locationState.error}</p> : null}
+                </Panel>
                 <Field label="Age group">
                   <select
                     className="text-input"

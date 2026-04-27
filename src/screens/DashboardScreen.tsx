@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { dualPrice } from '@/utils/format';
 
-type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops';
+type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops' | 'Items';
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
@@ -57,7 +57,11 @@ export default function DashboardScreen() {
           return listing.intent === 'teach';
         }
 
-        return listing.intent === 'workshop';
+        if (filter === 'Workshops') {
+          return listing.intent === 'workshop';
+        }
+
+        return listing.intent === 'item';
       })
       .slice(0, 4);
   }, [listings, currentUser, filter]);
@@ -72,10 +76,10 @@ export default function DashboardScreen() {
   return (
     <Screen
       title="Home"
-      subtitle="Live balance, your next commitment, and the most relevant ways to keep moving this week."
+      subtitle="The fastest way to see your next move, a few strong matches, and the main actions."
       action={<Pill tone="teal">{currentUser.creditBalance} cr live</Pill>}
     >
-      <button className="credit-card" onClick={() => setShowCredits(true)} type="button">
+      <button className="credit-card" data-tutorial-target="home" onClick={() => setShowCredits(true)} type="button">
         <div className="credit-card-copy">
           <p className="panel-eyebrow">Credit balance</p>
           <strong>{currentUser.creditBalance} credits</strong>
@@ -127,12 +131,13 @@ export default function DashboardScreen() {
       <Panel eyebrow="Recommendations" title="Personalized by intent">
         <Segments
           value={filter}
-          options={['All', 'Swaps', 'Teachers', 'Workshops']}
+          options={['All', 'Swaps', 'Teachers', 'Workshops', 'Items']}
           onChange={(next) => setFilter(next as IntentFilter)}
         />
         <div className="stack-list">
           {recommendations.map((listing) => (
             <article className="list-card clean-card" key={listing.id}>
+              <img alt={listing.title} className="listing-thumb" src={listing.photos[0]} />
               <div>
                 <span className="card-label">{listing.intent}</span>
                 <strong>{listing.title}</strong>
@@ -142,18 +147,29 @@ export default function DashboardScreen() {
                 </small>
               </div>
               <div className="button-column">
-                <Button
-                  onClick={() =>
-                    navigate('/app/new', {
-                      state: {
-                        mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
-                        listingId: listing.id
-                      }
-                    })
-                  }
-                >
-                  Review flow
-                </Button>
+                {listing.intent === 'item' ? (
+                  <Button
+                    onClick={() => {
+                      const threadId = startConversation(listing.ownerId);
+                      navigate(`/app/messages?thread=${threadId}`);
+                    }}
+                  >
+                    Message seller
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() =>
+                      navigate('/app/new', {
+                        state: {
+                          mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
+                          listingId: listing.id
+                        }
+                      })
+                    }
+                  >
+                    Review flow
+                  </Button>
+                )}
                 <Button tone="secondary" onClick={() => navigate('/app/discover')}>
                   See details
                 </Button>

@@ -21,16 +21,18 @@ import { dualPrice } from '@/utils/format';
 const intentColors = {
   teach: '#d86c42',
   swap: '#789e78',
-  workshop: '#d8a246'
+  workshop: '#d8a246',
+  item: '#5a73c8'
 };
 
-type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops';
+type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops' | 'Items';
 
 export default function DiscoverScreen() {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const listings = useAppStore((state) => state.listings);
   const saveListingForLater = useAppStore((state) => state.saveListingForLater);
+  const startConversation = useAppStore((state) => state.startConversation);
   const [tab, setTab] = useState<IntentFilter>('All');
   const [view, setView] = useState<'Map' | 'List'>('Map');
   const [query, setQuery] = useState('');
@@ -53,6 +55,9 @@ export default function DiscoverScreen() {
         }
         if (tab === 'Workshops') {
           return listing.intent === 'workshop';
+        }
+        if (tab === 'Items') {
+          return listing.intent === 'item';
         }
         return true;
       })
@@ -87,7 +92,9 @@ export default function DiscoverScreen() {
         ? 'Teacher'
         : listing.intent === 'swap'
           ? 'Swap'
-          : 'Workshop',
+          : listing.intent === 'item'
+            ? 'Item'
+            : 'Workshop',
     summary: `${distance.toFixed(1)} km • ${dualPrice(listing)}`,
     color: intentColors[listing.intent]
   }));
@@ -101,14 +108,14 @@ export default function DiscoverScreen() {
   return (
     <Screen
       title="Discover"
-      subtitle="Explore swaps, teachers, and workshops with clear pricing, local context, and intent-first filtering."
+      subtitle="Browse swaps, teachers, items, and workshops without digging through crowded posts."
       action={<Pill tone="teal">{visible.length} nearby</Pill>}
     >
       <Panel>
         <SearchField value={query} onChange={setQuery} placeholder="Search by skill, teacher, or city" />
         <Segments
           value={tab}
-          options={['All', 'Swaps', 'Teachers', 'Workshops']}
+          options={['All', 'Swaps', 'Teachers', 'Workshops', 'Items']}
           onChange={(next) => setTab(next as IntentFilter)}
         />
         <Segments value={view} options={['Map', 'List']} onChange={(next) => setView(next as 'Map' | 'List')} />
@@ -126,9 +133,20 @@ export default function DiscoverScreen() {
           <div className="stack-list">
             {visible.map(({ listing, distance }) => (
               <article className="list-card clean-card" key={listing.id}>
+                <img
+                  alt={listing.title}
+                  className="listing-thumb"
+                  src={listing.photos[0]}
+                />
                 <div>
                   <span className="card-label" style={{ color: intentColors[listing.intent] }}>
-                    {listing.intent === 'teach' ? 'Teacher' : listing.intent === 'swap' ? 'Swap' : 'Workshop'}
+                    {listing.intent === 'teach'
+                      ? 'Teacher'
+                      : listing.intent === 'swap'
+                        ? 'Swap'
+                        : listing.intent === 'item'
+                          ? 'Item'
+                          : 'Workshop'}
                   </span>
                   <strong>{listing.title}</strong>
                   <p>{listing.description}</p>
@@ -137,18 +155,29 @@ export default function DiscoverScreen() {
                   </small>
                 </div>
                 <div className="button-column">
-                  <Button
-                    onClick={() =>
-                      navigate('/app/new', {
-                        state: {
-                          mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
-                          listingId: listing.id
-                        }
-                      })
-                    }
-                  >
-                    Review flow
-                  </Button>
+                  {listing.intent === 'item' ? (
+                    <Button
+                      onClick={() => {
+                        const threadId = startConversation(listing.ownerId);
+                        navigate(`/app/messages?thread=${threadId}`);
+                      }}
+                    >
+                      Message seller
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() =>
+                        navigate('/app/new', {
+                          state: {
+                            mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
+                            listingId: listing.id
+                          }
+                        })
+                      }
+                    >
+                      Review flow
+                    </Button>
+                  )}
                   <Button tone="secondary" onClick={() => setSelectedSaveId(listing.id)}>
                     Save for later
                   </Button>

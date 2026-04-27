@@ -8,6 +8,7 @@ import {
   AppData,
   CreditLedgerEntry,
   FormatPreference,
+  GeoPoint,
   HobbyProfile,
   ListingIntent,
   NotificationPreferences,
@@ -18,15 +19,16 @@ import {
   Toast,
   User
 } from '@/types/models';
+import { createAnonymousAlias } from '@/utils/aliases';
 import { createId } from '@/utils/createId';
 import { ACTION_HISTORY_ROUTE } from '@/utils/routes';
 
 type SignUpPayload = {
-  realName: string;
+  realName?: string;
   identifier: string;
   password: string;
-  barangay: string;
-  city: string;
+  anonymousMode: boolean;
+  location?: GeoPoint | null;
   ageGroup: AgeGroup;
 };
 
@@ -102,6 +104,7 @@ interface AppState extends AppData {
   signUp: (payload: SignUpPayload) => { ok: boolean; message: string };
   completeOnboarding: (payload: OnboardingPayload) => void;
   completeGuide: () => void;
+  restartGuide: () => void;
   logout: () => void;
   updateProfile: (patch: Partial<User>) => void;
   updatePrivacy: (patch: Partial<User['privacy']>) => void;
@@ -261,11 +264,12 @@ export const useAppStore = create<AppState>()(
         }
 
         const userId = createId('user');
+        const alias = createAnonymousAlias(userId);
         const newUser: User = {
           id: userId,
           realName: `${provider} Friend`,
           displayName: `${provider} Friend`,
-          anonymousAlias: `${provider} Spark`,
+          anonymousAlias: alias,
           email,
           phone: '09999999999',
           password: 'SocialLogin9',
@@ -337,27 +341,30 @@ export const useAppStore = create<AppState>()(
 
         const userId = createId('user');
         const isEmail = normalized.includes('@');
+        const alias = createAnonymousAlias(userId);
+        const fallbackLocation = payload.location ?? {
+          barangay: 'Poblacion',
+          city: 'Makati',
+          lat: 14.5656,
+          lng: 121.0292
+        };
+        const preferredName = payload.realName?.trim() || '';
         const newUser: User = {
           id: userId,
-          realName: payload.realName.trim(),
-          displayName: payload.realName.trim().split(' ')[0] ?? payload.realName.trim(),
-          anonymousAlias: 'Pocket Horizon',
+          realName: preferredName || alias,
+          displayName: payload.anonymousMode ? alias : preferredName.split(' ')[0] ?? preferredName,
+          anonymousAlias: alias,
           email: isEmail ? normalized : `${userId}@hobbyswap.app`,
           phone: isEmail ? '09170000000' : payload.identifier.trim(),
           password: payload.password,
-          location: {
-            barangay: payload.barangay.trim(),
-            city: payload.city.trim(),
-            lat: 14.5656,
-            lng: 121.0292
-          },
+          location: fallbackLocation,
           ageGroup: payload.ageGroup,
           bio: 'New to HobbySwap and open to swaps, workshops, and gentle skill-sharing.',
           avatar: '#103b39',
           hobbyProfiles: [],
           availability: [],
           preferredFormats: ['Hybrid'],
-          anonymousMode: false,
+          anonymousMode: payload.anonymousMode,
           onboardingComplete: false,
           guideCompleted: false,
           trustScore: 58,
@@ -420,7 +427,9 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
-            displayName: payload.displayName.trim() || user.displayName,
+            displayName: payload.anonymousMode
+              ? user.anonymousAlias
+              : payload.displayName.trim() || user.displayName,
             hobbyProfiles: payload.hobbyProfiles,
             availability: payload.availability,
             preferredFormats: payload.preferredFormats,
@@ -431,6 +440,7 @@ export const useAppStore = create<AppState>()(
           quickMatches: buildQuickMatches(
             {
               ...currentUser,
+              displayName: payload.anonymousMode ? currentUser.anonymousAlias : currentUser.displayName,
               hobbyProfiles: payload.hobbyProfiles,
               availability: payload.availability,
               preferredFormats: payload.preferredFormats
@@ -451,6 +461,19 @@ export const useAppStore = create<AppState>()(
           users: updateUser(state.users, currentUser.id, (user) => ({
             ...user,
             guideCompleted: true
+          }))
+        }));
+      },
+      restartGuide: () => {
+        const currentUser = currentUserFrom(get());
+        if (!currentUser) {
+          return;
+        }
+
+        set((state) => ({
+          users: updateUser(state.users, currentUser.id, (user) => ({
+            ...user,
+            guideCompleted: false
           }))
         }));
       },
@@ -587,7 +610,12 @@ export const useAppStore = create<AppState>()(
               ownerId: currentUser.id,
               title: listingTitle,
               description: payload.description,
-              category: payload.intent === 'workshop' ? 'Workshop' : 'Teacher Listing',
+              category:
+                payload.intent === 'workshop'
+                  ? 'Workshop'
+                  : payload.intent === 'item'
+                    ? 'Marketplace Item'
+                    : 'Teacher Listing',
               hobbyId: payload.hobbyId,
               photos: [
                 payload.photoUrl ||
@@ -616,7 +644,7 @@ export const useAppStore = create<AppState>()(
               currentUser.id,
               'listing',
               'Listing published',
-              `${listingTitle} is now live and ready for bookings or swap offers.`,
+              `${listingTitle} is now live and ready for ${payload.intent === 'item' ? 'buyer messages or saves' : 'bookings or swap offers'}.`,
               ACTION_HISTORY_ROUTE
             ),
             ...state.notifications

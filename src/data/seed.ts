@@ -1,16 +1,8 @@
+import { buildHobbyCatalog } from '@/data/hobbyCatalog';
 import { AppData } from '@/types/models';
 
 export const seedData: AppData = {
-  hobbies: [
-    { id: 'watercolor', label: 'Watercolor', icon: '🎨', color: '#d86c42' },
-    { id: 'pottery', label: 'Pottery', icon: '🏺', color: '#9c6a48' },
-    { id: 'film-photo', label: 'Film Photo', icon: '📷', color: '#7f8f6b' },
-    { id: 'guitar', label: 'Guitar', icon: '🎸', color: '#d79a35' },
-    { id: 'crochet', label: 'Crochet', icon: '🧶', color: '#cc5f8d' },
-    { id: 'journaling', label: 'Journaling', icon: '📔', color: '#5a73c8' },
-    { id: 'urban-gardening', label: 'Urban Gardening', icon: '🪴', color: '#4f8b5a' },
-    { id: 'dance', label: 'Street Dance', icon: '🕺', color: '#ef8b5a' }
-  ],
+  hobbies: buildHobbyCatalog(),
   users: [
     {
       id: 'user-me',
@@ -352,6 +344,30 @@ export const seedData: AppData = {
       createdAt: '2026-04-16T08:00:00.000Z',
       ratingAverage: 4.85,
       completedSessions: 16
+    },
+    {
+      id: 'listing-5',
+      ownerId: 'user-2',
+      title: 'Starter Film Camera Kit',
+      description: 'A tested point-and-shoot, strap, and two practice rolls for someone easing into film.',
+      category: 'Marketplace Item',
+      hobbyId: 'film-photo',
+      photos: ['https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80'],
+      condition: 'Good',
+      location: { barangay: 'Teachers Village', city: 'Quezon City', lat: 14.6476, lng: 121.0619 },
+      availability: ['May 1, 5:30 PM', 'May 3, 11:00 AM'],
+      format: 'In-person',
+      level: 'Beginner',
+      intent: 'item',
+      priceMode: 'both',
+      creditPrice: 28,
+      cashPricePhp: 950,
+      savedBy: ['user-me'],
+      offers: [],
+      status: 'active',
+      createdAt: '2026-04-18T12:30:00.000Z',
+      ratingAverage: 4.9,
+      completedSessions: 8
     }
   ],
   transactions: [],
@@ -697,38 +713,38 @@ export const seedData: AppData = {
   tutorialSteps: [
     {
       id: 'tutorial-1',
-      title: 'Your balance stays visible up top',
-      body: 'The home page keeps credits, pending earnings, and your next session in one clean first view.',
+      title: 'Home keeps your next move visible',
+      body: 'This first card shows your balance, next session, and the one thing worth checking right now.',
       target: 'home'
     },
     {
       id: 'tutorial-2',
-      title: 'Discover is organized by intent',
-      body: 'Map pins and list cards separate swaps, teachers, and workshops without making you dig.',
+      title: 'Discover separates swaps, items, and workshops',
+      body: 'Use this tab when you want to browse listings fast instead of reading through long posts.',
       target: 'discover'
     },
     {
       id: 'tutorial-3',
-      title: 'The plus button is the main action hub',
-      body: 'Build an equal swap, book a session with escrow, or publish a teacher listing from one page.',
+      title: 'The + button is the main action hub',
+      body: 'Tap + to make a swap, list an item, offer a session, or set up a workshop.',
       target: 'new'
     },
     {
       id: 'tutorial-4',
-      title: 'Challenges are private and transparent',
-      body: 'You can see rewards, progress, and rules without a public feed or popularity contest.',
+      title: 'Challenges keep practice moving',
+      body: 'Open this when you want lightweight prompts and clear rewards without feed pressure.',
       target: 'challenges'
     },
     {
       id: 'tutorial-5',
-      title: 'Your profile shows participation-based trust',
-      body: 'Reliability, responsiveness, and follow-through come from behavior, not follower counts.',
+      title: 'Profile keeps your trust signals simple',
+      body: 'This is where your visibility, history, and personal settings stay easy to adjust.',
       target: 'profile'
     },
     {
       id: 'tutorial-6',
-      title: 'Swap Log is your ledger and payout tracker',
-      body: 'Track credit movement, active sessions, review release, and upcoming cash payout dates.',
+      title: 'Swap Log keeps every action in one place',
+      body: 'Listings, swaps, reviews, payments, and payouts all collect in the same history trail.',
       target: 'log'
     }
   ]

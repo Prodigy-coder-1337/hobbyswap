@@ -53,21 +53,23 @@ export default function NewFlowScreen() {
     equalSwap: true,
     creditAmount: '15',
     note: 'Keep the pacing beginner-friendly and confirm boundaries after each session.',
-    availabilitySlots: [
-      createAvailabilitySlot({ day: 'Tuesday', time: '6:00 PM' }),
-      createAvailabilitySlot({ day: 'Saturday', time: '10:00 AM' })
-    ]
+    availabilitySlots: [createAvailabilitySlot({ time: '18:00' }, 2), createAvailabilitySlot({ time: '10:00' }, 5)]
   });
 
   const teacherListings = useMemo(
-    () => listings.filter((listing) => listing.ownerId !== currentUser?.id && listing.intent !== 'swap'),
+    () =>
+      listings.filter(
+        (listing) =>
+          listing.ownerId !== currentUser?.id &&
+          (listing.intent === 'teach' || listing.intent === 'workshop')
+      ),
     [listings, currentUser]
   );
 
   const [bookingForm, setBookingForm] = useState({
     listingId: routeState?.listingId ?? teacherListings[0]?.id ?? '',
     paymentMethod: 'Credits' as PaymentMethod,
-    scheduleSlots: [createAvailabilitySlot({ day: 'Friday', time: '6:00 PM' })],
+    scheduleSlots: [createAvailabilitySlot({ time: '18:00' }, 4)],
     note: 'Please keep this beginner-safe and low pressure.'
   });
 
@@ -82,10 +84,7 @@ export default function NewFlowScreen() {
     creditPrice: '15',
     cashPricePhp: '350',
     photoUrl: '',
-    availabilitySlots: [
-      createAvailabilitySlot({ day: 'Thursday', time: '6:00 PM' }),
-      createAvailabilitySlot({ day: 'Saturday', time: '10:00 AM' })
-    ]
+    availabilitySlots: [createAvailabilitySlot({ time: '18:00' }, 3), createAvailabilitySlot({ time: '10:00' }, 5)]
   });
 
   useEffect(() => {
@@ -143,7 +142,7 @@ export default function NewFlowScreen() {
   return (
     <Screen
       title="New"
-      subtitle="Build an equal swap, book a session with a clear payment trail, or publish a teacher listing."
+      subtitle="Make a swap, book a session, or publish a listing for teaching, workshops, or items."
       action={<Pill tone="warm">Step {step}</Pill>}
     >
       <Segments
@@ -439,7 +438,7 @@ export default function NewFlowScreen() {
       ) : null}
 
       {mode === 'Create listing' ? (
-        <Panel eyebrow="Mode 3" title="Create a teacher or workshop listing">
+        <Panel eyebrow="Mode 3" title="Create a session, workshop, or item listing">
           {step === 1 ? (
             <div className="form-stack">
               <Field label="Title">
@@ -476,6 +475,7 @@ export default function NewFlowScreen() {
                   >
                     <option value="teach">Teacher session</option>
                     <option value="workshop">Workshop</option>
+                    <option value="item">Item listing</option>
                   </select>
                 </Field>
               </div>
@@ -589,13 +589,13 @@ export default function NewFlowScreen() {
                     <p>{createAvailabilityLabels.join(' • ')}</p>
                   </div>
                   <div>
-                    <strong>Teacher-facing fee rule</strong>
+                    <strong>{createForm.intent === 'item' ? 'Seller' : 'Teacher'} fee rule</strong>
                     <p>
                       {createForm.priceMode === 'credits'
-                        ? 'Credit transfers are fee-free.'
+                        ? 'Credit transfers stay fee-free.'
                         : createForm.priceMode === 'free'
                           ? 'Free listings carry no fee.'
-                          : `Cash sessions carry a 9% platform fee, so a ₱${createForm.cashPricePhp} listing pays out roughly ₱${Number(createForm.cashPricePhp || 0) - cashFeeExample}.`}
+                          : `Cash listings carry a 9% platform fee, so a ₱${createForm.cashPricePhp} listing pays out roughly ₱${Number(createForm.cashPricePhp || 0) - cashFeeExample}.`}
                     </p>
                   </div>
                 </div>
@@ -610,7 +610,7 @@ export default function NewFlowScreen() {
                       title: createForm.title,
                       description: createForm.description,
                       hobbyId: createForm.hobbyId,
-                      intent: createForm.intent as 'teach' | 'workshop',
+                      intent: createForm.intent as 'teach' | 'workshop' | 'item',
                       level: createForm.level as 'Beginner' | 'Learning' | 'Comfortable' | 'Can Teach',
                       format: createForm.format as 'In-person' | 'Hybrid' | 'Online',
                       priceMode: createForm.priceMode,

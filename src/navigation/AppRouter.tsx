@@ -17,7 +17,6 @@ const SwapLogScreen = lazy(() => import('@/screens/SwapLogScreen'));
 const MessagingScreen = lazy(() => import('@/screens/MessagingScreen'));
 const NotificationsScreen = lazy(() => import('@/screens/NotificationsScreen'));
 const SettingsScreen = lazy(() => import('@/screens/SettingsScreen'));
-const GuideScreen = lazy(() => import('@/screens/GuideScreen'));
 
 function withSuspense(element: ReactNode) {
   return <Suspense fallback={<LoadingState />}>{element}</Suspense>;
@@ -37,10 +36,6 @@ function GuardedAppShell() {
     return <Navigate replace to="/onboarding" />;
   }
 
-  if (!currentUser.guideCompleted && location.pathname !== '/app/guide') {
-    return <Navigate replace to="/app/guide" />;
-  }
-
   return <AppShell />;
 }
 
@@ -54,7 +49,7 @@ function OnboardingGuard() {
   }
 
   if (currentUser.onboardingComplete) {
-    return <Navigate replace to={currentUser.guideCompleted ? '/app/home' : '/app/guide'} />;
+    return <Navigate replace to="/app/home" />;
   }
 
   return <OnboardingScreen />;
@@ -80,7 +75,7 @@ function AppRoutes() {
         { path: 'messages', element: withSuspense(<MessagingScreen />) },
         { path: 'notifications', element: withSuspense(<NotificationsScreen />) },
         { path: 'settings', element: withSuspense(<SettingsScreen />) },
-        { path: 'guide', element: withSuspense(<GuideScreen />) }
+        { path: 'guide', element: <Navigate replace to="/app/home" /> }
       ]
     },
     { path: '*', element: <Navigate replace to="/" /> }

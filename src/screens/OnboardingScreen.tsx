@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AvailabilityBuilder, createAvailabilitySlot, formatAvailabilitySlot } from '@/components/AvailabilityBuilder';
-import { Button, Field, Panel, Pill, Screen, Toggle } from '@/components/ui';
+import { HobbyPicker } from '@/components/HobbyPicker';
+import { Button, Field, Panel, Pill, Screen, Segments } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
 import { SkillLevel } from '@/types/models';
@@ -15,23 +16,21 @@ export default function OnboardingScreen() {
   const currentUser = useCurrentUser();
   const hobbies = useAppStore((state) => state.hobbies);
   const completeOnboarding = useAppStore((state) => state.completeOnboarding);
-  const [displayName, setDisplayName] = useState(currentUser?.displayName ?? '');
+  const [displayName, setDisplayName] = useState(currentUser?.displayName ?? currentUser?.anonymousAlias ?? '');
   const [selectedHobbies, setSelectedHobbies] = useState<Record<string, SkillLevel>>({});
-  const [availabilitySlots, setAvailabilitySlots] = useState([
-    createAvailabilitySlot({ day: 'Tuesday', time: '6:00 PM' })
-  ]);
+  const [availabilitySlots, setAvailabilitySlots] = useState([createAvailabilitySlot({}, 2)]);
   const [preferredFormats, setPreferredFormats] = useState<string[]>(['Hybrid']);
-  const [anonymousMode, setAnonymousMode] = useState(true);
+  const [anonymousMode, setAnonymousMode] = useState(currentUser?.anonymousMode ?? true);
   const availability = availabilitySlots.map((slot) => formatAvailabilitySlot(slot));
 
   const errors = useMemo(
     () => ({
-      displayName: validateRequired(displayName, 'Display name'),
+      displayName: anonymousMode ? '' : validateRequired(displayName, 'Display name'),
       hobbies: validateSelection(Object.keys(selectedHobbies), 'Hobby'),
       availability: validateSelection(availabilitySlots, 'Availability'),
       formats: validateSelection(preferredFormats, 'Format')
     }),
-    [displayName, selectedHobbies, availabilitySlots, preferredFormats]
+    [anonymousMode, displayName, selectedHobbies, availabilitySlots, preferredFormats]
   );
 
   if (!currentUser) {
@@ -65,49 +64,43 @@ export default function OnboardingScreen() {
       preferredFormats: preferredFormats as ('In-person' | 'Hybrid' | 'Online')[],
       anonymousMode
     });
-    navigate('/app/guide');
+    navigate('/app/home');
   }
 
   return (
     <div className="auth-shell">
       <Screen
         title="Tune your first week"
-        subtitle="Tell HobbySwap what you want to explore so we can build a calmer, more relevant dashboard from day one."
+        subtitle="Pick a few hobbies, set real dates, and keep the setup light."
         action={<Pill tone="mauve">Step 2 of 2</Pill>}
       >
         <Panel eyebrow="Identity" title="How should we introduce you?">
-          <Field error={errors.displayName} label="Display name">
-            <input
-              className="text-input"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="Mika"
+          <Field hint="Anonymous mode lets you start with your alias instead." label="Anonymous mode">
+            <Segments
+              value={anonymousMode ? 'On' : 'Off'}
+              options={['Off', 'On']}
+              onChange={(next) => setAnonymousMode(next === 'On')}
             />
           </Field>
-          <Toggle
-            checked={anonymousMode}
-            description="Use your alias during early messages and first meetup planning."
-            label="Start in anonymous mode"
-            onChange={setAnonymousMode}
-          />
+          {!anonymousMode ? (
+            <Field error={errors.displayName} label="Display name">
+              <input
+                className="text-input"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder="Mika"
+              />
+            </Field>
+          ) : (
+            <div className="mini-panel">
+              <strong>{currentUser.anonymousAlias}</strong>
+              <p>This alias will be shown until you switch anonymous mode off.</p>
+            </div>
+          )}
         </Panel>
 
-        <Panel eyebrow="Hobbies" title="Pick your interests">
-          <p className="field-hint">Choose as many as you like. Each one gets its own skill level.</p>
-          <div className="hobby-grid">
-            {hobbies.map((hobby) => (
-              <button
-                className={`hobby-card ${selectedHobbies[hobby.id] ? 'active' : ''}`}
-                key={hobby.id}
-                onClick={() => toggleHobby(hobby.id)}
-                style={{ '--accent': hobby.color } as React.CSSProperties}
-                type="button"
-              >
-                <span>{hobby.icon}</span>
-                <strong>{hobby.label}</strong>
-              </button>
-            ))}
-          </div>
+        <Panel eyebrow="Hobbies" title="Search and add your interests">
+          <HobbyPicker hobbies={hobbies} onToggle={toggleHobby} selectedIds={Object.keys(selectedHobbies)} />
           {errors.hobbies ? <p className="field-error">{errors.hobbies}</p> : null}
 
           {Object.keys(selectedHobbies).length ? (

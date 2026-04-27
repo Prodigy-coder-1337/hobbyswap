@@ -12,6 +12,7 @@ export default function SettingsScreen() {
   const updateNotificationPrefs = useAppStore((state) => state.updateNotificationPrefs);
   const updateAccessibility = useAppStore((state) => state.updateAccessibility);
   const requestVerification = useAppStore((state) => state.requestVerification);
+  const restartGuide = useAppStore((state) => state.restartGuide);
   const togglePremium = useAppStore((state) => state.togglePremium);
   const deleteAccount = useAppStore((state) => state.deleteAccount);
   const resetDemoData = useAppStore((state) => state.resetDemoData);
@@ -81,8 +82,14 @@ export default function SettingsScreen() {
           <Button tone="secondary" onClick={() => requestVerification('local-id')}>
             Verify school or local ID
           </Button>
-          <Button tone="secondary" onClick={() => navigate('/app/guide')}>
-            Open App Guide
+          <Button
+            tone="secondary"
+            onClick={() => {
+              restartGuide();
+              navigate('/app/home');
+            }}
+          >
+            Replay dashboard tour
           </Button>
           <Button tone="secondary" onClick={togglePremium}>
             {currentUser.premium ? 'Pause premium' : 'Enable premium'}
