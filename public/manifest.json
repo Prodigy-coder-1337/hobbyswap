@@ -1,9 +1,9 @@
 {
   "name": "HobbySwap",
   "short_name": "HobbySwap",
-  "description": "Community-first hobby swapping and skill sharing in Metro Manila.",
-  "theme_color": "#fcf3e8",
-  "background_color": "#f6efe6",
+  "description": "Swipe-based hobby discovery for friends, teachers, workshops, and gear.",
+  "theme_color": "#ff5a5f",
+  "background_color": "#fff7ef",
   "display": "standalone",
   "start_url": "/",
   "scope": "/",

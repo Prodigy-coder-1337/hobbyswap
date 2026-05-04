@@ -5,10 +5,11 @@ import {
   Bell,
   CirclePlus,
   Compass,
-  Home,
+  Flame,
   ScrollText,
   Search,
   Settings,
+  Sparkles,
   Trophy,
   UserRound,
   WalletCards,
@@ -309,9 +310,9 @@ export function ModalSheet({
 }
 
 const mainTabs = [
-  { to: '/app/home', label: 'Home', icon: Home },
   { to: '/app/discover', label: 'Discover', icon: Compass },
-  { to: '/app/challenges', label: 'Challenges', icon: Trophy },
+  { to: '/app/home', label: 'Today', icon: Flame },
+  { to: '/app/challenges', label: 'Rewards', icon: Trophy },
   { to: '/app/profile', label: 'Me', icon: UserRound }
 ] as const;
 
@@ -368,15 +369,16 @@ export function BottomNav() {
 }
 
 const titles: Record<string, string> = {
-  '/app/home': 'Home',
+  '/app/home': 'Today',
   '/app/discover': 'Discover',
   '/app/new': 'New',
-  '/app/challenges': 'Challenges',
+  '/app/challenges': 'Rewards',
   '/app/profile': 'Me',
-  '/app/log': 'Swap Log',
+  '/app/log': 'Activity',
   '/app/messages': 'Messages',
   '/app/notifications': 'Notifications',
   '/app/settings': 'Settings',
+  '/app/premium': 'Premium',
   '/app/guide': 'App Guide'
 };
 
@@ -431,11 +433,11 @@ export function TopBar() {
           </button>
         ) : (
           <div className="brand-mark">
-            <span />
+            <Sparkles size={18} />
           </div>
         )}
         <div>
-          <p className="top-bar-eyebrow">Community-first skill sharing</p>
+          <p className="top-bar-eyebrow">Meet through hobbies</p>
           <strong>{title}</strong>
         </div>
       </div>

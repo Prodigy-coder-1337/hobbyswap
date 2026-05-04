@@ -18,8 +18,8 @@ Detailed rationale: [`docs/TECH_STACK.md`](./docs/TECH_STACK.md)
 ## Core Product Areas
 
 - Landing, auth, onboarding, and guided walkthrough
-- Home dashboard with credit balance, pending earnings, next session, intent-filtered recommendations, and weekly challenge progress
-- Discover with map + list views, intent-colored pins, tab pills, pricing in both PHP and credits, and a sticky teacher listing nudge
+- Today dashboard with daily prompts, streaks, credit missions, next session, and quick discovery lanes
+- Swipe-based Discover with visual categories, profile cards, workshop cards, item cards, and quick actions
 - Center `+` flow for equal swaps, credit or cash bookings, and teacher listing creation with fee breakdowns
 - Swap log with taught / learned / credits stat cards, credit ledger, session progress, payout tracker, and PDF export
 - Profile with behavior-based trust indicators, skill intent tags, personal resource sharing, and privacy toggles
@@ -30,7 +30,7 @@ Detailed rationale: [`docs/TECH_STACK.md`](./docs/TECH_STACK.md)
 ## Run Locally
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -90,11 +90,12 @@ Key directories:
 
 Any static host that can serve the built `dist/` folder will work, including Netlify, Cloudflare Pages, or GitHub Pages.
 
-## Validation Performed
+## Validation Guidance
 
-- `npm install`
-- `npm run check`
-- `npm run build`
+- Run `git diff --check` before handoff.
+- Confirm JSON assets parse correctly.
+- Run `npm ci`, `npm run check`, and `npm run build` on a machine with Node.js and npm installed.
+- If npm or `node_modules` are missing locally, follow [`docs/LOCAL_VERIFICATION_GUIDE.md`](./docs/LOCAL_VERIFICATION_GUIDE.md).
 
 ## Documentation Index
 
@@ -104,3 +105,4 @@ Any static host that can serve the built `dist/` folder will work, including Net
 - Button-by-button reference: [`docs/BUTTON_REFERENCE.md`](./docs/BUTTON_REFERENCE.md)
 - User flows: [`docs/USER_FLOWS.md`](./docs/USER_FLOWS.md)
 - Deployment notes: [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)
+- Local verification guide: [`docs/LOCAL_VERIFICATION_GUIDE.md`](./docs/LOCAL_VERIFICATION_GUIDE.md)

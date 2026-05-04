@@ -1,6 +1,15 @@
+import { Gift, Sparkles, Ticket, Trophy, UserPlus, Zap } from 'lucide-react';
 import { Button, Panel, Pill, ProgressBar, Screen } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
+
+const creditWays = [
+  { title: 'Complete your profile', reward: '+10 cr', icon: Sparkles },
+  { title: 'Join a workshop', reward: '+15 cr', icon: Ticket },
+  { title: 'Teach a skill', reward: '+25 cr', icon: Zap },
+  { title: 'Invite a friend', reward: '+20 cr', icon: UserPlus },
+  { title: 'Complete a challenge', reward: '+10 cr', icon: Trophy }
+];
 
 export default function ChallengesScreen() {
   const currentUser = useCurrentUser();
@@ -17,10 +26,31 @@ export default function ChallengesScreen() {
 
   return (
     <Screen
-      title="Challenges"
-      subtitle="Private weekly prompts that reward teaching, swapping, and sharing without a public feed."
-      action={<Pill tone="mauve">{active.length} active</Pill>}
+      title="Rewards"
+      subtitle="Tiny missions. Real credits."
+      action={<Pill tone="mauve">{active.length} live</Pill>}
     >
+      <section className="reward-hero">
+        <Gift size={24} />
+        <h2>Earn credits by showing up.</h2>
+        <p>Complete simple hobby actions, collect badges, and unlock more ways to learn.</p>
+      </section>
+
+      <Panel eyebrow="Earn credits" title="5 simple ways">
+        <div className="credit-way-grid">
+          {creditWays.map((way) => {
+            const Icon = way.icon;
+            return (
+              <article className="credit-way-card" key={way.title}>
+                <Icon size={20} />
+                <strong>{way.title}</strong>
+                <Pill tone="teal">{way.reward}</Pill>
+              </article>
+            );
+          })}
+        </div>
+      </Panel>
+
       <div className="stack-list">
         {active.map((challenge) => {
           const progress = challenge.userProgress[currentUser.id] ?? 0;
@@ -37,14 +67,12 @@ export default function ChallengesScreen() {
               <p>{challenge.prompt}</p>
               <ProgressBar max={challenge.progressGoal} value={progress} />
               <div className="metric-inline">
-                <span>
-                  Progress {progress}/{challenge.progressGoal}
-                </span>
-                <span>{challenge.participantIds.length} participants</span>
+                <span>{progress}/{challenge.progressGoal} done</span>
+                <span>{challenge.participantIds.length} joined</span>
               </div>
               <div className="button-row">
                 <Button tone="secondary" onClick={() => joinChallenge(challenge.id)}>
-                  {joined ? 'Joined' : 'Join challenge'}
+                  {joined ? 'Joined' : 'Join'}
                 </Button>
                 <Button disabled={rewarded} onClick={() => advanceChallenge(challenge.id)}>
                   {rewarded ? 'Reward claimed' : 'Log progress'}
@@ -55,36 +83,29 @@ export default function ChallengesScreen() {
         })}
       </div>
 
-      <Panel eyebrow="Credit earning guide" title="How the rules work">
-        <div className="rule-list">
-          <div>
-            <strong>Teach a session</strong>
-            <p>+10 to +20 credits depending on the listing you set.</p>
-          </div>
-          <div>
-            <strong>Get a 5-star review</strong>
-            <p>+5 credits bonus for high-quality teaching.</p>
-          </div>
-          <div>
-            <strong>Equal swaps</strong>
-            <p>±0 credits. Equal means equal.</p>
-          </div>
+      <Panel eyebrow="Badges" title="Recent wins">
+        <div className="badge-strip">
+          <span>First Workshop</span>
+          <span>Weekend Explorer</span>
+          <span>Helpful Teacher</span>
         </div>
       </Panel>
 
-      <Panel eyebrow="Archive" title="Past challenges">
-        <div className="stack-list">
-          {archived.map((challenge) => (
-            <article className="list-card clean-card" key={challenge.id}>
-              <div>
-                <strong>{challenge.title}</strong>
-                <p>{challenge.prompt}</p>
-                <small>Reward: +{challenge.creditReward} cr</small>
-              </div>
-            </article>
-          ))}
-        </div>
-      </Panel>
+      {archived.length ? (
+        <Panel eyebrow="Past" title="Previous prompts">
+          <div className="stack-list">
+            {archived.map((challenge) => (
+              <article className="list-card clean-card" key={challenge.id}>
+                <div>
+                  <strong>{challenge.title}</strong>
+                  <p>{challenge.prompt}</p>
+                  <small>Reward: +{challenge.creditReward} cr</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
     </Screen>
   );
 }

@@ -72,6 +72,7 @@ export interface NotificationPreferences {
 
 export interface AccessibilitySettings {
   fontScale: 'Default' | 'Large' | 'Largest';
+  theme: 'Light' | 'Dark' | 'System';
   highContrast: boolean;
   screenReaderHints: boolean;
   reduceMotion: boolean;

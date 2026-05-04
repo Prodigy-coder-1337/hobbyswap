@@ -140,8 +140,8 @@ export default function NewFlowScreen() {
 
   return (
     <Screen
-      title="New"
-      subtitle="Make a swap, book a session, or publish a listing for teaching, workshops, or items."
+      title="Create"
+      subtitle="Teach, join, list, or swap in a few taps."
       action={<Pill tone="warm">Step {step}</Pill>}
     >
       <Segments
@@ -151,7 +151,7 @@ export default function NewFlowScreen() {
       />
 
       {mode === 'Swap' ? (
-        <Panel eyebrow="Mode 1" title="Equal swap contract builder">
+        <Panel eyebrow="Swap" title="Trade skills">
           {step === 1 ? (
             <div className="form-stack">
               <Field label="Swap partner">
@@ -241,11 +241,11 @@ export default function NewFlowScreen() {
                   onChange={(event) => setSwapForm((state) => ({ ...state, note: event.target.value }))}
                 />
               </Field>
-              <Button onClick={() => setStep(2)}>Review contract preview</Button>
+              <Button onClick={() => setStep(2)}>Preview swap</Button>
             </div>
           ) : (
             <div className="stack-list">
-              <Panel eyebrow="Contract preview" title={`${swapForm.teachSkill} ↔ ${swapForm.learnSkill}`}>
+              <Panel eyebrow="Swap preview" title={`${swapForm.teachSkill} ↔ ${swapForm.learnSkill}`}>
                 <div className="rule-list">
                   <div>
                     <strong>Availability choices</strong>
@@ -298,7 +298,7 @@ export default function NewFlowScreen() {
       ) : null}
 
       {mode === 'Book session' ? (
-        <Panel eyebrow="Mode 2" title="Book a session or workshop">
+        <Panel eyebrow="Book" title="Join a lesson or workshop">
           {step === 1 ? (
             <div className="form-stack">
               <Field label="Choose a teacher or workshop">
@@ -359,7 +359,7 @@ export default function NewFlowScreen() {
                 <Button tone="secondary" onClick={() => setStep(1)}>
                   Back
                 </Button>
-                <Button onClick={() => setStep(3)}>Review escrow breakdown</Button>
+                <Button onClick={() => setStep(3)}>Review checkout</Button>
               </div>
             </div>
           ) : null}
@@ -395,14 +395,14 @@ export default function NewFlowScreen() {
                 </div>
               </Panel>
 
-              <Panel eyebrow="Escrow flow" title="What happens next">
+              <Panel eyebrow="Next" title="How booking works">
                 <div className="escrow-steps">
                   <div>
                     <strong>1. You pay</strong>
                     <p>The booking is confirmed and the amount is held.</p>
                   </div>
                   <div>
-                    <strong>2. Escrow holds</strong>
+                    <strong>2. We hold it</strong>
                     <p>Funds or credits stay protected until the session is marked complete.</p>
                   </div>
                   <div>
@@ -437,7 +437,7 @@ export default function NewFlowScreen() {
       ) : null}
 
       {mode === 'Create listing' ? (
-        <Panel eyebrow="Mode 3" title="Create a session, workshop, or item listing">
+        <Panel eyebrow="List" title="Show your skills or gear">
           {step === 1 ? (
             <div className="form-stack">
               <Field label="Title">
@@ -559,7 +559,7 @@ export default function NewFlowScreen() {
                   onChange={(event) => setCreateForm((state) => ({ ...state, photoUrl: event.target.value }))}
                 />
               </Field>
-              <Button onClick={() => setStep(2)}>Review fee breakdown</Button>
+              <Button onClick={() => setStep(2)}>Preview listing</Button>
             </div>
           ) : (
             <div className="stack-list">

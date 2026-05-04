@@ -100,7 +100,7 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
 
       <div className="tutorial-card">
         <div className="tutorial-card-top">
-          <Pill tone="mauve">Dashboard tour</Pill>
+          <Pill tone="mauve">Quick tour</Pill>
           <span className="field-hint">{progress}</span>
         </div>
         <strong>{step.title}</strong>

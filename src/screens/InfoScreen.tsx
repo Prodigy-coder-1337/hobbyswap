@@ -5,15 +5,15 @@ const content: Record<string, { title: string; body: string[] }> = {
   about: {
     title: 'About HobbySwap',
     body: [
-      'HobbySwap is designed for people who want to practice hobbies with other humans, not chase public attention. The product emphasizes finite sessions, small commitments, local trust, and community utility.',
-      'Core experiences are never hidden behind follower counts, algorithmic ranking pressure, or public clout metrics. Premium exists only for convenience perks and community support.'
+      'HobbySwap helps people discover hobby friends, teachers, workshops, and gear through quick visual cards.',
+      'The product keeps each screen focused so members can swipe, save, join, message, or swap without reading a wall of text.'
     ]
   },
   privacy: {
     title: 'Privacy',
     body: [
-      'Profiles start with privacy-first defaults. Exact locations stay hidden unless a member chooses to share them. Messaging can begin in alias mode, and read receipts stay off by default.',
-      'HobbySwap does not sell member data and does not use manipulative engagement loops.'
+      'Profiles start with privacy-first defaults. Exact locations stay hidden unless a member chooses to share them. Anonymous Mode hides profile views, activity, and discovery visibility until a member interacts.',
+      'HobbySwap does not sell member data.'
     ]
   },
   terms: {

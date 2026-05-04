@@ -15,7 +15,7 @@ export default function AppShell() {
     <div className="app-shell">
       <div
         ref={shellRef}
-        className={`phone-shell ${currentUser?.accessibility.highContrast ? 'high-contrast' : ''} ${currentUser?.accessibility.reduceMotion ? 'reduce-motion' : ''}`}
+        className={`phone-shell ${currentUser?.accessibility.theme === 'Dark' ? 'theme-dark' : ''} ${currentUser?.accessibility.highContrast ? 'high-contrast' : ''} ${currentUser?.accessibility.reduceMotion ? 'reduce-motion' : ''}`}
         data-font-scale={currentUser?.accessibility.fontScale ?? 'Default'}
       >
         <TopBar />

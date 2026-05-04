@@ -12,13 +12,13 @@ export default function GuideScreen() {
 
   function finish() {
     completeGuide();
-    navigate('/app/home');
+    navigate('/app/discover');
   }
 
   return (
     <Screen
       title="How to move around HobbySwap"
-      subtitle="A quick guided walkthrough of the spaces you will use most."
+      subtitle="A quick tour of the main spaces."
       action={<Pill tone="teal">{index + 1} / {tutorialSteps.length}</Pill>}
     >
       <Panel eyebrow={`Focus: ${step.target}`} title={step.title}>
@@ -27,8 +27,7 @@ export default function GuideScreen() {
           <div>
             <strong>What happens next</strong>
             <p>
-              After this guide, you will land on the dashboard with local matches, challenge prompts,
-              and your upcoming swaps.
+              After this guide, you will land in discovery with people, workshops, and gear.
             </p>
           </div>
           <div>
@@ -39,7 +38,7 @@ export default function GuideScreen() {
       </Panel>
 
       <div className="button-row">
-        <Button tone="secondary" onClick={() => navigate('/app/home')}>
+        <Button tone="secondary" onClick={() => navigate('/app/discover')}>
           Skip for now
         </Button>
         {index > 0 ? (

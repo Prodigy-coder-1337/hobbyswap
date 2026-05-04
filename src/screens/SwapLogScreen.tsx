@@ -152,8 +152,8 @@ export default function SwapLogScreen() {
 
   return (
     <Screen
-      title="Swap Log"
-      subtitle="Track learned hours, taught hours, credits, held funds, and the exact point where reviews release value."
+      title="Activity"
+      subtitle="Your bookings, credits, reviews, and hobby wins."
       action={
         <div className="button-row">
           <Button tone="secondary" onClick={() => exportSwapSummaryPdf(currentUser, swapLog.filter((entry) => entry.userId === currentUser.id))}>

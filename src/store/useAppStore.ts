@@ -303,6 +303,7 @@ export const useAppStore = create<AppState>()(
           },
           accessibility: {
             fontScale: 'Default',
+            theme: 'Light',
             highContrast: false,
             screenReaderHints: true,
             reduceMotion: false
@@ -359,7 +360,7 @@ export const useAppStore = create<AppState>()(
           password: payload.password,
           location: fallbackLocation,
           ageGroup: payload.ageGroup,
-          bio: 'New to HobbySwap and open to swaps, workshops, and gentle skill-sharing.',
+          bio: 'New to HobbySwap and open to hobby friends, workshops, and skill-sharing.',
           avatar: '#103b39',
           hobbyProfiles: [],
           availability: [],
@@ -387,6 +388,7 @@ export const useAppStore = create<AppState>()(
           },
           accessibility: {
             fontScale: 'Default',
+            theme: 'Light',
             highContrast: false,
             screenReaderHints: true,
             reduceMotion: false
@@ -450,7 +452,7 @@ export const useAppStore = create<AppState>()(
             state.users,
             state.hobbies
           ),
-          toasts: addToast(state, 'Your dashboard is ready.')
+          toasts: addToast(state, 'Your discovery deck is ready.')
         }));
       },
       completeGuide: () => {

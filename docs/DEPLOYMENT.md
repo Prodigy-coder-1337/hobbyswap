@@ -3,7 +3,7 @@
 ## Local Development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -35,6 +35,7 @@ The production output is emitted into `dist/`.
 - Create a contract and send a consent-first chat.
 - Export a PDF from the swap log.
 - Open settings and verify data export works.
+- If local npm/check/build cannot run, fix the local toolchain with [`LOCAL_VERIFICATION_GUIDE.md`](./LOCAL_VERIFICATION_GUIDE.md) before shipping.
 
 ## PWA Notes
 

@@ -91,7 +91,7 @@ export default function AuthScreen() {
         const user = useAppStore.getState().users.find(
           (entry) => entry.id === useAppStore.getState().currentUserId
         );
-        navigate(user?.onboardingComplete ? '/app/home' : '/onboarding');
+        navigate(user?.onboardingComplete ? '/app/discover' : '/onboarding');
       }
       return;
     }
@@ -117,15 +117,15 @@ export default function AuthScreen() {
   return (
     <div className="auth-shell">
       <Screen
-        title={mode === 'Sign Up' ? 'Start your first swap week' : 'Welcome back'}
+        title={mode === 'Sign Up' ? 'Start discovering' : 'Welcome back'}
         subtitle={
           mode === 'Sign Up'
-            ? 'Short setup, GPS location, then you are inside.'
+            ? 'Create an account, pick hobbies, then swipe.'
             : 'Use `mika@hobbyswap.app` / `HobbySwap9` if you want to explore fast.'
         }
-        action={mode === 'Sign Up' ? <Pill tone="warm">Mobile-first setup</Pill> : null}
+        action={mode === 'Sign Up' ? <Pill tone="warm">Quick setup</Pill> : null}
       >
-        <Panel eyebrow="What you can do" title="Swap, list items, or join workshops">
+        <Panel eyebrow="What you can do" title="Meet, learn, teach, swap">
           <div className="auth-visual-grid">
             <img alt="People trading creative supplies" src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&q=80" />
             <img alt="Creative hobby tools and notebooks" src="https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=900&q=80" />
@@ -142,7 +142,7 @@ export default function AuthScreen() {
           <form className="form-stack" onSubmit={onSubmit}>
             {mode === 'Sign Up' ? (
               <>
-                <Field hint="Turn this on if you want to start with an alias instead." label="Anonymous mode">
+                <Field hint="Browse privately until you interact." label="Anonymous Mode">
                   <Segments
                     value={form.anonymousMode ? 'On' : 'Off'}
                     options={['Off', 'On']}
@@ -189,7 +189,7 @@ export default function AuthScreen() {
 
             {mode === 'Sign Up' ? (
               <>
-                <Panel eyebrow="Location" title="GPS autofill">
+                <Panel eyebrow="Nearby" title="Find local hobby people">
                   <div className="button-row">
                     <Pill tone="teal">{locationState.label}</Pill>
                     <Button tone="secondary" onClick={() => void requestLocation()}>
@@ -214,7 +214,7 @@ export default function AuthScreen() {
               </>
             ) : null}
 
-            <Button type="submit">{mode === 'Sign Up' ? 'Create Account' : 'Log In'}</Button>
+            <Button type="submit">{mode === 'Sign Up' ? 'Create account' : 'Log in'}</Button>
           </form>
 
           <div className="social-row">

@@ -13,6 +13,7 @@ const DiscoverScreen = lazy(() => import('@/screens/DiscoverScreen'));
 const NewFlowScreen = lazy(() => import('@/screens/NewFlowScreen'));
 const ChallengesScreen = lazy(() => import('@/screens/ChallengesScreen'));
 const ProfileScreen = lazy(() => import('@/screens/ProfileScreen'));
+const PremiumScreen = lazy(() => import('@/screens/PremiumScreen'));
 const SwapLogScreen = lazy(() => import('@/screens/SwapLogScreen'));
 const MessagingScreen = lazy(() => import('@/screens/MessagingScreen'));
 const NotificationsScreen = lazy(() => import('@/screens/NotificationsScreen'));
@@ -49,7 +50,7 @@ function OnboardingGuard() {
   }
 
   if (currentUser.onboardingComplete) {
-    return <Navigate replace to="/app/home" />;
+    return <Navigate replace to="/app/discover" />;
   }
 
   return <OnboardingScreen />;
@@ -65,17 +66,18 @@ function AppRoutes() {
       path: '/app',
       element: <GuardedAppShell />,
       children: [
-        { index: true, element: <Navigate replace to="/app/home" /> },
+        { index: true, element: <Navigate replace to="/app/discover" /> },
         { path: 'home', element: withSuspense(<DashboardScreen />) },
         { path: 'discover', element: withSuspense(<DiscoverScreen />) },
         { path: 'new', element: withSuspense(<NewFlowScreen />) },
         { path: 'challenges', element: withSuspense(<ChallengesScreen />) },
         { path: 'profile', element: withSuspense(<ProfileScreen />) },
+        { path: 'premium', element: withSuspense(<PremiumScreen />) },
         { path: 'log', element: withSuspense(<SwapLogScreen />) },
         { path: 'messages', element: withSuspense(<MessagingScreen />) },
         { path: 'notifications', element: withSuspense(<NotificationsScreen />) },
         { path: 'settings', element: withSuspense(<SettingsScreen />) },
-        { path: 'guide', element: <Navigate replace to="/app/home" /> }
+        { path: 'guide', element: <Navigate replace to="/app/discover" /> }
       ]
     },
     { path: '*', element: <Navigate replace to="/" /> }

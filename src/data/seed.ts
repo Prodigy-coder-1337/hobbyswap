@@ -46,6 +46,7 @@ export const seedData: AppData = {
       },
       accessibility: {
         fontScale: 'Default',
+        theme: 'Light',
         highContrast: false,
         screenReaderHints: true,
         reduceMotion: false
@@ -100,6 +101,7 @@ export const seedData: AppData = {
       },
       accessibility: {
         fontScale: 'Default',
+        theme: 'Light',
         highContrast: false,
         screenReaderHints: true,
         reduceMotion: false
@@ -154,6 +156,7 @@ export const seedData: AppData = {
       },
       accessibility: {
         fontScale: 'Large',
+        theme: 'Light',
         highContrast: false,
         screenReaderHints: true,
         reduceMotion: false
@@ -208,6 +211,7 @@ export const seedData: AppData = {
       },
       accessibility: {
         fontScale: 'Default',
+        theme: 'Dark',
         highContrast: false,
         screenReaderHints: true,
         reduceMotion: false
@@ -713,26 +717,26 @@ export const seedData: AppData = {
   tutorialSteps: [
     {
       id: 'tutorial-1',
-      title: 'Home keeps your next move visible',
-      body: 'This first card shows your balance, next session, and the one thing worth checking right now.',
+      title: 'Today shows one next move',
+      body: 'Open Today when you want your prompt, credits, missions, and upcoming plan.',
       target: 'home'
     },
     {
       id: 'tutorial-2',
-      title: 'Discover separates swaps, items, and workshops',
-      body: 'Use this tab when you want to browse listings fast instead of reading through long posts.',
+      title: 'Discover is your swipe deck',
+      body: 'Swipe through people, workshops, and gear without reading crowded posts.',
       target: 'discover'
     },
     {
       id: 'tutorial-3',
-      title: 'The + button is the main action hub',
-      body: 'Tap + to make a swap, list an item, offer a session, or set up a workshop.',
+      title: 'The + button creates',
+      body: 'Tap + to teach, list gear, book a session, or set up a swap.',
       target: 'new'
     },
     {
       id: 'tutorial-4',
-      title: 'Challenges keep practice moving',
-      body: 'Open this when you want lightweight prompts and clear rewards without feed pressure.',
+      title: 'Rewards keep it playful',
+      body: 'Open Rewards for missions, badges, and simple credit bonuses.',
       target: 'challenges'
     },
     {
@@ -743,8 +747,8 @@ export const seedData: AppData = {
     },
     {
       id: 'tutorial-6',
-      title: 'Swap Log keeps every action in one place',
-      body: 'Listings, swaps, reviews, payments, and payouts all collect in the same history trail.',
+      title: 'Activity keeps your trail',
+      body: 'Bookings, reviews, payments, and completed hobby moments collect here.',
       target: 'log'
     }
   ]

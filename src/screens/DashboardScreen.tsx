@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button, ModalSheet, Panel, Pill, ProgressBar, Screen, Segments } from '@/components/ui';
+import { Bookmark, Flame, Gift, MessageCircle, Sparkles, Ticket, Trophy, Zap } from 'lucide-react';
+import { Avatar, Button, ModalSheet, Panel, Pill, ProgressBar, Screen } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
-import { formatDate, formatDateTime } from '@/utils/date';
-import { dualPrice } from '@/utils/format';
-
-type IntentFilter = 'All' | 'Swaps' | 'Teachers' | 'Workshops' | 'Items';
+import { formatDateTime } from '@/utils/date';
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
@@ -17,7 +15,6 @@ export default function DashboardScreen() {
   const threads = useAppStore((state) => state.threads);
   const users = useAppStore((state) => state.users);
   const startConversation = useAppStore((state) => state.startConversation);
-  const [filter, setFilter] = useState<IntentFilter>('All');
   const [showCredits, setShowCredits] = useState(false);
 
   const nextSession = useMemo(() => {
@@ -39,38 +36,9 @@ export default function DashboardScreen() {
       .sort((a, b) => new Date(a.session.date).getTime() - new Date(b.session.date).getTime())[0];
   }, [contracts, currentUser]);
 
-  const recommendations = useMemo(() => {
+  const recentThread = useMemo(() => {
     if (!currentUser) {
-      return [];
-    }
-
-    return listings
-      .filter((listing) => listing.ownerId !== currentUser.id)
-      .filter((listing) => {
-        if (filter === 'All') {
-          return true;
-        }
-
-        if (filter === 'Swaps') {
-          return listing.intent === 'swap';
-        }
-
-        if (filter === 'Teachers') {
-          return listing.intent === 'teach';
-        }
-
-        if (filter === 'Workshops') {
-          return listing.intent === 'workshop';
-        }
-
-        return listing.intent === 'item';
-      })
-      .slice(0, 4);
-  }, [listings, currentUser, filter]);
-
-  const recentThreads = useMemo(() => {
-    if (!currentUser) {
-      return [];
+      return null;
     }
 
     return threads
@@ -83,49 +51,98 @@ export default function DashboardScreen() {
           ? new Date(right.messages.at(-1)!.createdAt).getTime()
           : 0;
         return rightTime - leftTime;
-      })
-      .slice(0, 2);
+      })[0] ?? null;
   }, [threads, currentUser]);
 
   const weeklyChallenge = challenges.find((challenge) => !challenge.archived);
   const challengeProgress = currentUser && weeklyChallenge ? weeklyChallenge.userProgress[currentUser.id] ?? 0 : 0;
+  const myListings = currentUser ? listings.filter((listing) => listing.ownerId === currentUser.id) : [];
+  const missionItems = currentUser
+    ? [
+        {
+          icon: Sparkles,
+          title: 'Complete your profile',
+          reward: '+10 cr',
+          value: Math.min(currentUser.hobbyProfiles.length, 3),
+          max: 3
+        },
+        {
+          icon: Ticket,
+          title: 'Join a workshop',
+          reward: '+15 cr',
+          value: contracts.some((contract) => contract.learnerId === currentUser.id && contract.intent === 'workshop') ? 1 : 0,
+          max: 1
+        },
+        {
+          icon: Zap,
+          title: 'Teach a skill',
+          reward: '+25 cr',
+          value: myListings.some((listing) => listing.intent === 'teach') ? 1 : 0,
+          max: 1
+        },
+        {
+          icon: Gift,
+          title: 'Invite a friend',
+          reward: '+20 cr',
+          value: 0,
+          max: 1
+        },
+        {
+          icon: Trophy,
+          title: 'Hobby challenge',
+          reward: weeklyChallenge ? `+${weeklyChallenge.creditReward} cr` : '+10 cr',
+          value: challengeProgress,
+          max: weeklyChallenge?.progressGoal ?? 1
+        }
+      ]
+    : [];
 
   if (!currentUser) {
     return null;
   }
 
+  const threadPartner = recentThread
+    ? users.find((user) => recentThread.participantIds.includes(user.id) && user.id !== currentUser.id)
+    : null;
+
   return (
     <Screen
-      title="Home"
-      subtitle="The fastest way to see your next move, a few strong matches, and the main actions."
-      action={<Pill tone="teal">{currentUser.creditBalance} cr live</Pill>}
+      title="Today"
+      subtitle="One good next move, no homework."
+      action={<Pill tone="teal">{currentUser.creditBalance} cr</Pill>}
     >
-      <button className="credit-card" data-tutorial-target="home" onClick={() => setShowCredits(true)} type="button">
-        <div className="credit-card-copy">
-          <p className="panel-eyebrow">Credit balance</p>
-          <strong>{currentUser.creditBalance} credits</strong>
-          <p>Pending earnings: {currentUser.pendingCredits} cr</p>
+      <section className="today-hero">
+        <div>
+          <p className="panel-eyebrow">Daily prompt</p>
+          <h2>What hobby are you in the mood for?</h2>
+          <p>Swipe a few cards, save one idea, or join something this weekend.</p>
         </div>
-        <div className="credit-card-meta">
-          <span>Tap for the full credit guide</span>
-          <small>Next payout: {formatDate(currentUser.nextPayoutDate)}</small>
+        <div className="today-stats">
+          <span>
+            <Flame size={16} />
+            4 day streak
+          </span>
+          <span>
+            <Bookmark size={16} />
+            {currentUser.savedListingIds.length} saved
+          </span>
         </div>
-      </button>
+        <Button onClick={() => navigate('/app/discover')}>Swipe to discover</Button>
+      </section>
 
       <Panel
-        eyebrow="Next scheduled session"
-        title={nextSession ? nextSession.contract.title : 'Nothing scheduled yet'}
-        aside={nextSession ? <Pill tone="warm">{nextSession.contract.type.replace('-', ' ')}</Pill> : null}
+        eyebrow="Next up"
+        title={nextSession ? nextSession.contract.title : 'Find your first plan'}
+        aside={<Pill tone={nextSession ? 'warm' : 'mauve'}>{nextSession ? 'Booked' : 'Open'}</Pill>}
       >
         {nextSession ? (
-          <div className="stack-list">
+          <div className="simple-next-card">
+            <strong>{formatDateTime(nextSession.session.date)}</strong>
             <p>{nextSession.contract.locationLabel}</p>
-            <p>{formatDateTime(nextSession.session.date)} • {nextSession.contract.format}</p>
             <div className="button-row">
-              <Button tone="secondary" onClick={() => navigate('/app/log')}>
-                Open Swap Log
-              </Button>
+              <Button onClick={() => navigate('/app/log')}>View activity</Button>
               <Button
+                tone="secondary"
                 onClick={() => {
                   const partnerId =
                     nextSession.contract.teacherId === currentUser.id
@@ -135,197 +152,103 @@ export default function DashboardScreen() {
                   navigate(`/app/messages?thread=${threadId}`);
                 }}
               >
-                Open chat
+                Message
               </Button>
             </div>
           </div>
         ) : (
           <div className="button-row">
-            <Button onClick={() => navigate('/app/new')}>Plan a swap</Button>
-            <Button tone="secondary" onClick={() => navigate('/app/discover')}>
-              Browse listings
+            <Button onClick={() => navigate('/app/discover')}>Find your match</Button>
+            <Button tone="secondary" onClick={() => navigate('/app/new', { state: { mode: 'Create listing' } })}>
+              Teach what you know
             </Button>
           </div>
         )}
       </Panel>
 
-      <Panel eyebrow="Inbox" title="Messages">
-        {recentThreads.length ? (
-          <div className="thread-list">
-            {recentThreads.map((thread) => {
-              const partner = users.find(
-                (user) => thread.participantIds.includes(user.id) && user.id !== currentUser.id
-              );
-              const lastMessage = thread.messages.at(-1);
-              const partnerLabel = thread.aliasMode ? partner?.anonymousAlias : partner?.displayName;
+      <div className="quick-lanes">
+        <button onClick={() => navigate('/app/discover')} type="button">
+          <Sparkles size={20} />
+          <strong>People</strong>
+          <span>Find hobby friends</span>
+        </button>
+        <button onClick={() => navigate('/app/discover')} type="button">
+          <Ticket size={20} />
+          <strong>Workshops</strong>
+          <span>Join a group</span>
+        </button>
+        <button onClick={() => navigate('/app/discover')} type="button">
+          <Bookmark size={20} />
+          <strong>Gear</strong>
+          <span>Save or swap</span>
+        </button>
+      </div>
 
-              return partner ? (
-                <button
-                  className="thread-row"
-                  key={thread.id}
-                  onClick={() => navigate(`/app/messages?thread=${thread.id}`)}
-                  type="button"
-                >
-                  <Avatar color={partner.avatar} label={partnerLabel ?? partner.displayName} />
-                  <div className="thread-row-main">
-                    <div className="thread-row-meta">
-                      <strong>{partnerLabel}</strong>
-                      <span className="thread-row-time">
-                        {lastMessage
-                          ? new Intl.DateTimeFormat('en-PH', {
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            }).format(new Date(lastMessage.createdAt))
-                          : 'New'}
-                      </span>
-                    </div>
-                    <p className="thread-row-preview">
-                      {lastMessage
-                        ? lastMessage.imageUrl
-                          ? lastMessage.body
-                            ? `Photo • ${lastMessage.body}`
-                            : 'Sent an image'
-                          : lastMessage.body
-                        : 'Tap to open the chat.'}
-                    </p>
-                  </div>
-                </button>
-              ) : null;
-            })}
-          </div>
-        ) : (
-          <p>Message sellers, teachers, and swap partners without leaving the app.</p>
-        )}
-        <div className="button-row">
-          <Button onClick={() => navigate('/app/messages')}>Open messages</Button>
-          <Button tone="secondary" onClick={() => navigate('/app/discover')}>
-            Find people
-          </Button>
+      <button className="credit-card mission-credit-card" onClick={() => setShowCredits(true)} type="button">
+        <div>
+          <p className="panel-eyebrow">Credits</p>
+          <strong>{currentUser.creditBalance} credits</strong>
+          <p>{currentUser.pendingCredits} pending</p>
+        </div>
+        <Pill tone="warm">Earn more</Pill>
+      </button>
+
+      <Panel eyebrow="Missions" title="Earn credits">
+        <div className="mission-list">
+          {missionItems.map((mission) => {
+            const Icon = mission.icon;
+            return (
+              <article className="mission-row" key={mission.title}>
+                <span className="mission-icon">
+                  <Icon size={18} />
+                </span>
+                <div>
+                  <strong>{mission.title}</strong>
+                  <ProgressBar max={mission.max} value={mission.value} />
+                </div>
+                <Pill tone="teal">{mission.reward}</Pill>
+              </article>
+            );
+          })}
         </div>
       </Panel>
 
-      <Panel eyebrow="Recommendations" title="Personalized by intent">
-        <Segments
-          value={filter}
-          options={['All', 'Swaps', 'Teachers', 'Workshops', 'Items']}
-          onChange={(next) => setFilter(next as IntentFilter)}
-        />
-        <div className="stack-list">
-          {recommendations.map((listing) => (
-            <article className="list-card clean-card listing-card" key={listing.id}>
-              <img alt={listing.title} className="listing-thumb" src={listing.photos[0]} />
-              <div className="listing-card-copy">
-                <span className="card-label">{listing.intent}</span>
-                <strong>{listing.title}</strong>
-                <p>{listing.description}</p>
-                <small>
-                  {listing.intent === 'item'
-                    ? `${dualPrice(listing)} • ${listing.location.city}`
-                    : `${listing.ratingAverage.toFixed(1)} rating • ${listing.completedSessions} completed sessions • ${dualPrice(listing)}`}
-                </small>
+      {threadPartner && recentThread ? (
+        <Panel eyebrow="Latest chat" title="Keep the loop warm">
+          <button
+            className="thread-row"
+            onClick={() => navigate(`/app/messages?thread=${recentThread.id}`)}
+            type="button"
+          >
+            <Avatar color={threadPartner.avatar} label={threadPartner.displayName} />
+            <div className="thread-row-main">
+              <div className="thread-row-meta">
+                <strong>{threadPartner.displayName}</strong>
+                <MessageCircle size={16} />
               </div>
-              <div className="button-column listing-card-actions">
-                {listing.intent === 'item' ? (
-                  <Button
-                    onClick={() => {
-                      const threadId = startConversation(listing.ownerId);
-                      navigate(`/app/messages?thread=${threadId}`);
-                    }}
-                  >
-                    Message seller
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() =>
-                      navigate('/app/new', {
-                        state: {
-                          mode: listing.intent === 'swap' ? 'Swap' : 'Book session',
-                          listingId: listing.id
-                        }
-                      })
-                    }
-                  >
-                    Review flow
-                  </Button>
-                )}
-                <Button tone="secondary" onClick={() => navigate('/app/discover')}>
-                  See details
-                </Button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
-      {weeklyChallenge ? (
-        <Panel
-          eyebrow="Weekly challenge"
-          title={weeklyChallenge.title}
-          aside={<Pill tone="mauve">+{weeklyChallenge.creditReward} cr</Pill>}
-        >
-          <p>{weeklyChallenge.prompt}</p>
-          <ProgressBar max={weeklyChallenge.progressGoal} value={challengeProgress} />
-          <div className="metric-inline">
-            <span>
-              Progress {challengeProgress}/{weeklyChallenge.progressGoal}
-            </span>
-            <span>{weeklyChallenge.participantIds.length} participants</span>
-          </div>
-          <div className="button-row">
-            <Button onClick={() => navigate('/app/challenges')}>Open challenges</Button>
-            <Button tone="secondary" onClick={() => navigate('/app/log')}>
-              Open ledger
-            </Button>
-          </div>
+              <p className="thread-row-preview">{recentThread.messages.at(-1)?.body ?? 'Say hello.'}</p>
+            </div>
+          </button>
         </Panel>
       ) : null}
 
-      <ModalSheet onClose={() => setShowCredits(false)} open={showCredits} title="Credits explained">
-        <div className="stack-list">
-          <Panel eyebrow="Why credits exist" title="Asynchronous value, not popularity">
-            <p>
-              Credits solve the mismatch problem in skill-sharing. You can teach today, earn credits,
-              and spend them later on a totally different skill without needing a perfect direct swap.
-            </p>
-          </Panel>
-
-          <Panel eyebrow="How you earn" title="Transparent earning rules">
-            <div className="rule-list">
-              <div>
-                <strong>Teach a session</strong>
-                <p>You earn the listed credits when the learner confirms completion.</p>
-              </div>
-              <div>
-                <strong>Get a 5-star review</strong>
-                <p>Bonus +5 credits for strong teaching quality.</p>
-              </div>
-              <div>
-                <strong>Complete weekly challenges</strong>
-                <p>Bonus +5 to +15 credits depending on the challenge.</p>
-              </div>
-              <div>
-                <strong>Equal swaps</strong>
-                <p>No credits move at all. Equal means equal.</p>
-              </div>
-            </div>
-          </Panel>
-
-          <Panel eyebrow="How you spend" title="Booking with clarity">
-            <div className="rule-list">
-              <div>
-                <strong>Book a teacher</strong>
-                <p>Credits are deducted at booking and held until completion.</p>
-              </div>
-              <div>
-                <strong>Book a workshop</strong>
-                <p>Some workshops offer either a cash price or a credits price.</p>
-              </div>
-              <div>
-                <strong>Cash and credits coexist</strong>
-                <p>Credit transfers are fee-free. Cash bookings show the 9% platform fee explicitly.</p>
-              </div>
-            </div>
-          </Panel>
+      <ModalSheet onClose={() => setShowCredits(false)} open={showCredits} title="Earn credits">
+        <div className="mission-list">
+          {missionItems.map((mission) => {
+            const Icon = mission.icon;
+            return (
+              <article className="mission-row" key={mission.title}>
+                <span className="mission-icon">
+                  <Icon size={18} />
+                </span>
+                <div>
+                  <strong>{mission.title}</strong>
+                  <p>{mission.reward}</p>
+                </div>
+                <ProgressBar max={mission.max} value={mission.value} />
+              </article>
+            );
+          })}
         </div>
       </ModalSheet>
     </Screen>
