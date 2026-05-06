@@ -747,9 +747,9 @@ export const seedData: AppData = {
     },
     {
       id: 'tutorial-6',
-      title: 'Activity keeps your trail',
-      body: 'Bookings, reviews, payments, and completed hobby moments collect here.',
-      target: 'log'
+      title: 'Start swiping',
+      body: 'You are all set. Like, skip, save, or message from one clean card at a time.',
+      target: 'swipeDeck'
     }
   ]
 };

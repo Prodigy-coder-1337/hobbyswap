@@ -235,7 +235,7 @@ export default function DiscoverScreen() {
 
   return (
     <Screen title="Discover">
-      <section className="single-discovery-stage">
+      <section className="single-discovery-stage" data-tutorial-target="swipeDeck">
         <div className="discover-filter-bar">
           <label className="discover-mode-select">
             <span>Swipe with</span>

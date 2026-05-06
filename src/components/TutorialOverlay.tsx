@@ -22,12 +22,13 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
   const isActive = Boolean(currentUser && !currentUser.guideCompleted && location.pathname.startsWith('/app'));
   const step = tutorialSteps[index];
   const progress = useMemo(() => `${index + 1} / ${tutorialSteps.length}`, [index, tutorialSteps.length]);
+  const stepRoute = step?.target === 'swipeDeck' ? '/app/discover' : '/app/home';
 
   useEffect(() => {
-    if (isActive && location.pathname !== '/app/home') {
-      navigate('/app/home', { replace: true });
+    if (isActive && location.pathname !== stepRoute) {
+      navigate(stepRoute, { replace: true });
     }
-  }, [isActive, location.pathname, navigate]);
+  }, [isActive, location.pathname, navigate, stepRoute]);
 
   useEffect(() => {
     if (!isActive) {
@@ -66,12 +67,16 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
     };
 
     updateRect();
+    const animationFrame = window.requestAnimationFrame(updateRect);
+    const deferredMeasurement = window.setTimeout(updateRect, 120);
     window.addEventListener('resize', updateRect);
 
     return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(deferredMeasurement);
       window.removeEventListener('resize', updateRect);
     };
-  }, [isActive, shellRef, step]);
+  }, [isActive, location.pathname, shellRef, step]);
 
   if (!isActive || !step) {
     return null;
@@ -137,7 +142,7 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
             <Button
               onClick={finishGuide}
             >
-              Finish
+              Start swiping
             </Button>
           )}
         </div>

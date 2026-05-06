@@ -25,7 +25,7 @@ export type ReportCategory =
   | 'Copyright';
 export type SubjectType = 'user' | 'listing' | 'message';
 export type TaskLane = 'todo' | 'inProgress' | 'done';
-export type TutorialTarget = 'home' | 'discover' | 'new' | 'challenges' | 'profile' | 'log';
+export type TutorialTarget = 'home' | 'discover' | 'new' | 'challenges' | 'profile' | 'log' | 'swipeDeck';
 export type AgreementType = 'equal-swap' | 'credit-booking' | 'cash-booking' | 'workshop';
 export type LedgerType =
   | 'teaching'
