@@ -33,7 +33,8 @@ export type LedgerType =
   | 'challenge'
   | 'review-bonus'
   | 'equal-swap'
-  | 'workshop';
+  | 'workshop'
+  | 'purchase';
 
 export interface Hobby {
   id: string;

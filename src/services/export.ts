@@ -6,7 +6,7 @@ export function exportSwapSummaryPdf(user: User, entries: SwapLogEntry[]) {
   const pdf = new jsPDF();
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(20);
-  pdf.text('HobbySwap Progress Summary', 20, 20);
+  pdf.text('HobbiHop Progress Summary', 20, 20);
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'normal');
   pdf.text(`Member: ${user.displayName}`, 20, 32);
@@ -22,7 +22,7 @@ export function exportSwapSummaryPdf(user: User, entries: SwapLogEntry[]) {
     y += 18;
   });
 
-  pdf.save(`hobbyswap-summary-${user.displayName.toLowerCase().replace(/\s/g, '-')}.pdf`);
+  pdf.save(`hobbihop-summary-${user.displayName.toLowerCase().replace(/\s/g, '-')}.pdf`);
 }
 
 export function exportDataJson(payload: unknown, filename: string) {

@@ -6,6 +6,15 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
 import { formatDateTime } from '@/utils/date';
 
+function creditPeso(value: number) {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
 export default function DashboardScreen() {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
@@ -15,7 +24,9 @@ export default function DashboardScreen() {
   const threads = useAppStore((state) => state.threads);
   const users = useAppStore((state) => state.users);
   const startConversation = useAppStore((state) => state.startConversation);
+  const buyCredits = useAppStore((state) => state.buyCredits);
   const [showCredits, setShowCredits] = useState(false);
+  const [creditAmount, setCreditAmount] = useState('1000');
 
   const nextSession = useMemo(() => {
     if (!currentUser) {
@@ -104,6 +115,8 @@ export default function DashboardScreen() {
   const threadPartner = recentThread
     ? users.find((user) => recentThread.participantIds.includes(user.id) && user.id !== currentUser.id)
     : null;
+  const creditsToBuy = Math.max(0, Math.floor(Number(creditAmount) || 0));
+  const creditCost = creditsToBuy / 100;
 
   return (
     <Screen
@@ -190,7 +203,7 @@ export default function DashboardScreen() {
           <strong>{currentUser.creditBalance} credits</strong>
           <p>{currentUser.pendingCredits} pending</p>
         </div>
-        <Pill tone="warm">Earn more</Pill>
+        <Pill tone="warm">Buy more</Pill>
       </button>
 
       <Panel eyebrow="Missions" title="Earn credits">
@@ -232,7 +245,42 @@ export default function DashboardScreen() {
         </Panel>
       ) : null}
 
-      <ModalSheet onClose={() => setShowCredits(false)} open={showCredits} title="Earn credits">
+      <ModalSheet onClose={() => setShowCredits(false)} open={showCredits} title="Credits">
+        <section className="buy-credit-card">
+          <div>
+            <p className="panel-eyebrow">Buy more</p>
+            <strong>100 credits = ₱1</strong>
+            <p>Choose how many credits you want. We will add them to your balance right away.</p>
+          </div>
+          <div className="credit-preset-row">
+            {[500, 1000, 2500].map((amount) => (
+              <button key={amount} onClick={() => setCreditAmount(String(amount))} type="button">
+                {amount.toLocaleString()}
+              </button>
+            ))}
+          </div>
+          <label className="field">
+            <span className="field-label">Credits to buy</span>
+            <input
+              className="text-input"
+              min={1}
+              onChange={(event) => setCreditAmount(event.target.value)}
+              step={100}
+              type="number"
+              value={creditAmount}
+            />
+          </label>
+          <Button
+            disabled={creditsToBuy <= 0}
+            onClick={() => {
+              buyCredits(creditsToBuy);
+              setShowCredits(false);
+            }}
+          >
+            Buy {creditsToBuy.toLocaleString()} credits · {creditPeso(creditCost)}
+          </Button>
+        </section>
+
         <div className="mission-list">
           {missionItems.map((mission) => {
             const Icon = mission.icon;

@@ -17,7 +17,7 @@ export default function GuideScreen() {
 
   return (
     <Screen
-      title="How to move around HobbySwap"
+      title="How to move around HobbiHop"
       subtitle="A quick tour of the main spaces."
       action={<Pill tone="teal">{index + 1} / {tutorialSteps.length}</Pill>}
     >

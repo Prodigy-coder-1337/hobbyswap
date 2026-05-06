@@ -27,7 +27,7 @@ export default function LandingScreen() {
   const ready = useDelayedReady();
 
   if (!ready) {
-    return <div className="marketing-shell">Loading HobbySwap...</div>;
+    return <div className="marketing-shell">Loading HobbiHop...</div>;
   }
 
   return (
@@ -35,9 +35,10 @@ export default function LandingScreen() {
       <div className="marketing-hero">
         <section className="screen marketing-screen">
           <div className="marketing-stage playful-landing">
+            <img alt="HobbiHop logo" className="marketing-logo" src="/hobbihop-logo.jpg" />
             <Pill tone="teal">Swipe into your next hobby</Pill>
             <div className="marketing-copy">
-              <p className="screen-kicker">HobbySwap</p>
+              <p className="screen-kicker">HobbiHop</p>
               <h1 className="marketing-title">Meet people through the hobbies you love.</h1>
               <p className="marketing-subtitle">
                 Find hobby friends, teachers, workshops, and gear near you. Less reading, more discovering.

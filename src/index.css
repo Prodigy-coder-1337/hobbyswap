@@ -2,19 +2,19 @@
 
 :root {
   color-scheme: light;
-  --bg: #fff7ef;
-  --bg-soft: #fffaf5;
+  --bg: #fbf8ef;
+  --bg-soft: #fffdf8;
   --panel: rgba(255, 255, 255, 0.9);
   --panel-strong: #ffffff;
-  --text: #1d1d1f;
-  --muted: #706b66;
-  --line: rgba(29, 29, 31, 0.1);
-  --accent: #ff5a5f;
-  --accent-strong: #ef3d45;
-  --sage: #35d0ba;
-  --sage-strong: #168c7d;
-  --amber: #ffd166;
-  --mauve: #7f6bd4;
+  --text: #243333;
+  --muted: #756f67;
+  --line: rgba(36, 51, 51, 0.11);
+  --accent: #9ed8d3;
+  --accent-strong: #4faaa6;
+  --sage: #b7dcd8;
+  --sage-strong: #438f8b;
+  --amber: #ead4a8;
+  --mauve: #dbc0b9;
   --danger: #d94848;
   --shadow: 0 22px 70px rgba(29, 29, 31, 0.14);
 }
@@ -34,9 +34,9 @@ body {
   color: var(--text);
   font-family: 'Outfit', sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(255, 90, 95, 0.2), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(53, 208, 186, 0.18), transparent 26%),
-    linear-gradient(180deg, #fff8ef 0%, #f7eee6 100%);
+    radial-gradient(circle at top left, rgba(158, 216, 211, 0.34), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(234, 212, 168, 0.34), transparent 26%),
+    linear-gradient(180deg, #fffdf8 0%, #f4eee3 100%);
 }
 
 a {
@@ -106,15 +106,15 @@ video {
   --text: #f6f7f9;
   --muted: #a6abb5;
   --line: rgba(246, 247, 249, 0.12);
-  --accent: #ff6b6b;
-  --accent-strong: #ff4d57;
-  --sage: #4be3c2;
-  --sage-strong: #6ff0d5;
-  --amber: #ffd166;
+  --accent: #9ed8d3;
+  --accent-strong: #71c1bc;
+  --sage: #b7dcd8;
+  --sage-strong: #a8eee6;
+  --amber: #ead4a8;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   background:
-    radial-gradient(circle at top left, rgba(255, 107, 107, 0.16), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(75, 227, 194, 0.14), transparent 28%),
+    radial-gradient(circle at top left, rgba(158, 216, 211, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(234, 212, 168, 0.13), transparent 28%),
     linear-gradient(180deg, #101114 0%, #17191e 100%);
 }
 
@@ -175,12 +175,20 @@ video {
 }
 
 .brand-mark,
+.brand-logo,
 .icon-button {
   width: 40px;
   height: 40px;
   border-radius: 14px;
   display: grid;
   place-items: center;
+}
+
+.brand-logo {
+  object-fit: cover;
+  border: 1px solid rgba(158, 216, 211, 0.46);
+  background: #fffdf8;
+  box-shadow: 0 10px 22px rgba(36, 51, 51, 0.1);
 }
 
 .brand-mark {
@@ -338,9 +346,9 @@ video {
 }
 
 .button-primary {
-  color: white;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: 0 12px 26px rgba(255, 90, 95, 0.22);
+  color: #243333;
+  background: linear-gradient(135deg, var(--accent), var(--amber));
+  box-shadow: 0 12px 26px rgba(79, 170, 166, 0.2);
 }
 
 .button-secondary {
@@ -946,6 +954,14 @@ video {
   box-shadow: 0 16px 42px rgba(20, 37, 36, 0.08);
 }
 
+.marketing-logo {
+  width: min(210px, 62%);
+  align-self: center;
+  border-radius: 26px;
+  object-fit: cover;
+  box-shadow: 0 14px 34px rgba(36, 51, 51, 0.1);
+}
+
 .marketing-copy {
   gap: 10px;
 }
@@ -1353,10 +1369,7 @@ video {
   position: absolute;
   inset: 0;
   z-index: 40;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: calc(84px + env(safe-area-inset-top)) 16px 16px;
+  pointer-events: none;
 }
 
 .tutorial-highlight,
@@ -1386,20 +1399,32 @@ video {
   box-shadow: 0 10px 24px rgba(216, 108, 66, 0.32);
   animation: tutorialArrow 1.2s ease-in-out infinite;
   pointer-events: none;
+  z-index: 2;
 }
 
 .tutorial-card {
-  position: relative;
+  position: absolute;
+  left: 16px;
+  right: 16px;
   z-index: 1;
-  width: 100%;
+  width: auto;
   gap: 10px;
-  max-height: min(42vh, 280px);
+  max-height: min(34vh, 260px);
   overflow: auto;
   padding: 16px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.82);
   background: rgba(255, 252, 247, 0.97);
   box-shadow: 0 18px 40px rgba(10, 19, 19, 0.18);
+  pointer-events: auto;
+}
+
+.tutorial-placement-top {
+  top: calc(84px + env(safe-area-inset-top));
+}
+
+.tutorial-placement-bottom {
+  bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 .tutorial-card-top {
@@ -1903,6 +1928,62 @@ video {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42));
 }
 
+.single-discovery-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(158, 216, 211, 0.34), transparent 30%),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(255, 255, 255, 0.54));
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 42px rgba(36, 51, 51, 0.08);
+}
+
+.discover-filter-bar {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.discover-mode-select {
+  min-width: 170px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 24px rgba(36, 51, 51, 0.06);
+}
+
+.discover-mode-select span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.discover-mode-select select {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  color: var(--text);
+  background: transparent;
+  font-weight: 800;
+}
+
 .deck-header,
 .swipe-card-topline,
 .today-stats,
@@ -1939,6 +2020,13 @@ video {
   transform-origin: top center;
   touch-action: pan-y;
   user-select: none;
+}
+
+.swipe-card.single-card {
+  position: relative;
+  inset: auto;
+  min-height: 548px;
+  transform: none;
 }
 
 .swipe-card.top-card {
@@ -1999,6 +2087,22 @@ video {
 
 .swipe-card-copy h2 {
   font-size: 2rem;
+}
+
+.compact-swipe-copy {
+  gap: 8px;
+}
+
+.compact-swipe-copy h2 {
+  font-size: clamp(2rem, 10vw, 2.8rem);
+}
+
+.swipe-one-liner {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
 }
 
 .swipe-card-copy p,
@@ -2082,6 +2186,10 @@ video {
   flex: 1 1 104px;
 }
 
+.compact-swipe-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .detail-hero img,
 .detail-hero .person-visual {
   height: 220px;
@@ -2159,6 +2267,39 @@ video {
 
 .mission-credit-card {
   align-items: center;
+}
+
+.buy-credit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(158, 216, 211, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(234, 212, 168, 0.44), transparent 34%),
+    linear-gradient(135deg, rgba(158, 216, 211, 0.2), rgba(255, 255, 255, 0.9));
+}
+
+.buy-credit-card strong,
+.buy-credit-card p {
+  margin: 0;
+}
+
+.credit-preset-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.credit-preset-row button {
+  min-height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  font-weight: 800;
 }
 
 .mission-row {
@@ -2321,6 +2462,40 @@ video {
   color: var(--text);
 }
 
+.settings-compact-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.settings-compact-grid .panel {
+  gap: 10px;
+  padding: 14px;
+  border-radius: 22px;
+}
+
+.settings-compact-grid .panel-header {
+  margin-bottom: 0;
+}
+
+.settings-compact-grid .settings-promo-card,
+.settings-compact-grid .anonymous-control-card,
+.settings-compact-grid .privacy-preview-card,
+.settings-compact-grid .privacy-preview-grid article,
+.settings-compact-grid .toggle-row {
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.settings-compact-grid .privacy-preview-grid {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
+.settings-compact-grid .button-row,
+.settings-compact-grid .button-column {
+  gap: 8px;
+}
+
 .anonymous-control-card {
   width: 100%;
   justify-content: space-between;
@@ -2414,7 +2589,11 @@ video {
 .theme-dark .quick-lanes button,
 .theme-dark .landing-lane-card,
 .theme-dark .credit-way-card,
-.theme-dark .premium-plan-card {
+.theme-dark .premium-plan-card,
+.theme-dark .single-discovery-stage,
+.theme-dark .discover-mode-select,
+.theme-dark .buy-credit-card,
+.theme-dark .credit-preset-row button {
   background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
   border-color: var(--line);
 }
@@ -2435,7 +2614,8 @@ video {
 
 .theme-dark .text-input,
 .theme-dark .composer-input,
-.theme-dark .search-field input {
+.theme-dark .search-field input,
+.theme-dark .discover-mode-select select {
   color: var(--text);
 }
 

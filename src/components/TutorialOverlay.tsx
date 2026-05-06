@@ -35,6 +35,11 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
     }
   }, [isActive]);
 
+  function finishGuide() {
+    completeGuide();
+    navigate('/app/discover');
+  }
+
   useEffect(() => {
     if (!isActive || !shellRef.current || !step) {
       return;
@@ -72,10 +77,19 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
     return null;
   }
 
+  const shellWidth = shellRef.current?.clientWidth ?? 420;
+  const shellHeight = shellRef.current?.clientHeight ?? 780;
+  const cardPosition = targetRect && targetRect.top < shellHeight * 0.42 ? 'bottom' : 'top';
   const arrowStyle = targetRect
     ? {
-        top: Math.max(18, targetRect.top - 38),
-        left: Math.min(targetRect.left + targetRect.width / 2 - 18, 320)
+        top:
+          cardPosition === 'bottom'
+            ? targetRect.top + targetRect.height + 12
+            : Math.max(18, targetRect.top - 42),
+        left: Math.min(
+          Math.max(18, targetRect.left + targetRect.width / 2 - 18),
+          shellWidth - 54
+        )
       }
     : undefined;
 
@@ -93,12 +107,12 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
             }}
           />
           <div className="tutorial-arrow" style={arrowStyle}>
-            ↓
+            {cardPosition === 'bottom' ? '↑' : '↓'}
           </div>
         </>
       ) : null}
 
-      <div className="tutorial-card">
+      <div className={`tutorial-card tutorial-placement-${cardPosition}`}>
         <div className="tutorial-card-top">
           <Pill tone="mauve">Quick tour</Pill>
           <span className="field-hint">{progress}</span>
@@ -108,9 +122,7 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
         <div className="button-row">
           <Button
             tone="secondary"
-            onClick={() => {
-              completeGuide();
-            }}
+            onClick={finishGuide}
           >
             Skip for now
           </Button>
@@ -123,9 +135,7 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
             <Button onClick={() => setIndex((current) => current + 1)}>Next</Button>
           ) : (
             <Button
-              onClick={() => {
-                completeGuide();
-              }}
+              onClick={finishGuide}
             >
               Finish
             </Button>

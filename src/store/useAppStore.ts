@@ -111,6 +111,7 @@ interface AppState extends AppData {
   updateNotificationPrefs: (patch: Partial<NotificationPreferences>) => void;
   updateAccessibility: (patch: Partial<AccessibilitySettings>) => void;
   togglePremium: () => void;
+  buyCredits: (amount: number) => void;
   requestVerification: (type: 'phone' | 'local-id') => void;
   saveListingForLater: (listingId: string, note?: string) => void;
   createListing: (payload: CreateListingPayload) => void;
@@ -252,7 +253,7 @@ export const useAppStore = create<AppState>()(
         return { ok: true, message: 'Logged in.' };
       },
       loginWithProvider: (provider) => {
-        const email = provider === 'Google' ? 'google.friend@hobbyswap.app' : 'facebook.friend@hobbyswap.app';
+        const email = provider === 'Google' ? 'google.friend@hobbihop.app' : 'facebook.friend@hobbihop.app';
         const existing = get().users.find((user) => user.email === email);
 
         if (existing) {
@@ -355,12 +356,12 @@ export const useAppStore = create<AppState>()(
           realName: preferredName || alias,
           displayName: payload.anonymousMode ? alias : preferredName.split(' ')[0] ?? preferredName,
           anonymousAlias: alias,
-          email: isEmail ? normalized : `${userId}@hobbyswap.app`,
+          email: isEmail ? normalized : `${userId}@hobbihop.app`,
           phone: isEmail ? '09170000000' : payload.identifier.trim(),
           password: payload.password,
           location: fallbackLocation,
           ageGroup: payload.ageGroup,
-          bio: 'New to HobbySwap and open to hobby friends, workshops, and skill-sharing.',
+          bio: 'New to HobbiHop and open to hobby friends, workshops, and skill-sharing.',
           avatar: '#103b39',
           hobbyProfiles: [],
           availability: [],
@@ -556,6 +557,42 @@ export const useAppStore = create<AppState>()(
             premium: !user.premium
           })),
           toasts: addToast(state, currentUser.premium ? 'Premium paused.' : 'Premium enabled.')
+        }));
+      },
+      buyCredits: (amount) => {
+        const currentUser = currentUserFrom(get());
+        if (!currentUser) {
+          return;
+        }
+
+        const creditsToBuy = Math.max(1, Math.floor(amount));
+        const pricePhp = creditsToBuy / 100;
+
+        set((state) => ({
+          users: updateUser(state.users, currentUser.id, (user) => ({
+            ...user,
+            creditBalance: user.creditBalance + creditsToBuy
+          })),
+          creditLedger: [
+            {
+              id: createId('ledger'),
+              userId: currentUser.id,
+              delta: creditsToBuy,
+              title: `Bought ${creditsToBuy.toLocaleString()} credits for ₱${pricePhp.toLocaleString('en-PH', {
+                maximumFractionDigits: 2
+              })}`,
+              sessionType: 'purchase',
+              createdAt: new Date().toISOString(),
+              status: 'posted'
+            },
+            ...state.creditLedger
+          ],
+          toasts: addToast(
+            state,
+            `${creditsToBuy.toLocaleString()} credits added for ₱${pricePhp.toLocaleString('en-PH', {
+              maximumFractionDigits: 2
+            })}.`
+          )
         }));
       },
       requestVerification: (type) => {
@@ -1382,7 +1419,7 @@ export const useAppStore = create<AppState>()(
         })
     }),
     {
-      name: 'hobbyswap-store-v2',
+      name: 'hobbihop-store-v1',
       storage: createJSONStorage(() => localStorage)
     }
   )

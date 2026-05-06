@@ -3,9 +3,9 @@ import { Button, Panel, Screen } from '@/components/ui';
 
 const content: Record<string, { title: string; body: string[] }> = {
   about: {
-    title: 'About HobbySwap',
+    title: 'About HobbiHop',
     body: [
-      'HobbySwap helps people discover hobby friends, teachers, workshops, and gear through quick visual cards.',
+      'HobbiHop helps people discover hobby friends, teachers, workshops, and gear through quick visual cards.',
       'The product keeps each screen focused so members can swipe, save, join, message, or swap without reading a wall of text.'
     ]
   },
@@ -13,7 +13,7 @@ const content: Record<string, { title: string; body: string[] }> = {
     title: 'Privacy',
     body: [
       'Profiles start with privacy-first defaults. Exact locations stay hidden unless a member chooses to share them. Anonymous Mode hides profile views, activity, and discovery visibility until a member interacts.',
-      'HobbySwap does not sell member data.'
+      'HobbiHop does not sell member data.'
     ]
   },
   terms: {
@@ -26,8 +26,8 @@ const content: Record<string, { title: string; body: string[] }> = {
   contact: {
     title: 'Contact',
     body: [
-      'Community support: hello@hobbyswap.app',
-      'Partnerships with libraries, schools, NGOs, and creative spaces: partners@hobbyswap.app'
+      'Community support: hello@hobbihop.app',
+      'Partnerships with libraries, schools, NGOs, and creative spaces: partners@hobbihop.app'
     ]
   }
 };

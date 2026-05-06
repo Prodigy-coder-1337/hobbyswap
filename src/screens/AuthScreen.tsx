@@ -121,7 +121,7 @@ export default function AuthScreen() {
         subtitle={
           mode === 'Sign Up'
             ? 'Create an account, pick hobbies, then swipe.'
-            : 'Use `mika@hobbyswap.app` / `HobbySwap9` if you want to explore fast.'
+            : 'Use `mika@hobbihop.app` / `HobbiHop9` if you want to explore fast.'
         }
         action={mode === 'Sign Up' ? <Pill tone="warm">Quick setup</Pill> : null}
       >
@@ -172,7 +172,7 @@ export default function AuthScreen() {
               label="Email or phone"
             >
               <TextInput
-                placeholder="mika@hobbyswap.app"
+                placeholder="mika@hobbihop.app"
                 value={form.identifier}
                 onChange={(event) => setForm((state) => ({ ...state, identifier: event.target.value }))}
               />

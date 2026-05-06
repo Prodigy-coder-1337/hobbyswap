@@ -9,7 +9,6 @@ import {
   ScrollText,
   Search,
   Settings,
-  Sparkles,
   Trophy,
   UserRound,
   WalletCards,
@@ -31,7 +30,7 @@ export function Screen({
     <section className="screen">
       <header className="screen-header">
         <div className="screen-copy">
-          <p className="screen-kicker">HobbySwap</p>
+          <p className="screen-kicker">HobbiHop</p>
           <h1>{title}</h1>
           {subtitle ? <p className="screen-subtitle">{subtitle}</p> : null}
         </div>
@@ -389,7 +388,7 @@ export function TopBar() {
   const isMainTab = ['/app/home', '/app/discover', '/app/new', '/app/challenges', '/app/profile'].some((tab) =>
     pathname.startsWith(tab)
   );
-  const title = titles[pathname] ?? 'HobbySwap';
+  const title = titles[pathname] ?? 'HobbiHop';
 
   const rightAction =
     pathname.startsWith('/app/profile') ? (
@@ -432,9 +431,7 @@ export function TopBar() {
             <ArrowLeft size={18} />
           </button>
         ) : (
-          <div className="brand-mark">
-            <Sparkles size={18} />
-          </div>
+          <img alt="HobbiHop" className="brand-logo" src="/hobbihop-logo.jpg" />
         )}
         <div>
           <p className="top-bar-eyebrow">Meet through hobbies</p>

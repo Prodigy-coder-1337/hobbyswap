@@ -22,7 +22,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <Screen title="Settings" subtitle="Privacy, premium, and app feel." action={<Pill tone="teal">Simple mode</Pill>}>
+    <Screen title="Settings" subtitle="Privacy, premium, and app feel." action={<Pill tone="teal">Compact</Pill>}>
+      <div className="settings-compact-grid">
       <Panel eyebrow="Premium" title="Unlock better discovery">
         <div className="settings-promo-card">
           <span>
@@ -30,7 +31,7 @@ export default function SettingsScreen() {
           </span>
           <div>
             <strong>{currentUser.premium ? 'Premium is active' : 'Choose your visibility boost'}</strong>
-            <p>Compare Hobbyist, Teacher, and Premium+ in one clear table.</p>
+            <p>Compare plans in one table.</p>
           </div>
         </div>
         <Button onClick={() => navigate('/app/premium')}>View premium plans</Button>
@@ -67,12 +68,12 @@ export default function SettingsScreen() {
           <article>
             <Lock size={18} />
             <strong>Hidden</strong>
-            <p>Profile views, online status, last active, and your card in discovery.</p>
+            <p>Views, online status, last active, and discovery card.</p>
           </article>
           <article>
             <Sparkles size={18} />
             <strong>Shown when you act</strong>
-            <p>Your profile appears if you Like, Join, Message, or Swap.</p>
+            <p>Your profile appears when you Like, Join, Message, or Swap.</p>
           </article>
         </div>
 
@@ -129,7 +130,7 @@ export default function SettingsScreen() {
           </span>
           <div>
             <strong>Dark mode</strong>
-            <p>Keep cards image-first and easy on the eyes.</p>
+            <p>Image-first and easy on the eyes.</p>
           </div>
         </div>
         <Segments
@@ -202,7 +203,7 @@ export default function SettingsScreen() {
 
       <Panel eyebrow="Data" title="Your account">
         <div className="button-column">
-          <Button tone="secondary" onClick={() => exportDataJson(useAppStore.getState(), 'hobbyswap-export.json')}>
+          <Button tone="secondary" onClick={() => exportDataJson(useAppStore.getState(), 'hobbihop-export.json')}>
             Export my data
           </Button>
           <Button tone="secondary" onClick={resetDemoData}>
@@ -219,6 +220,7 @@ export default function SettingsScreen() {
           </Button>
         </div>
       </Panel>
+      </div>
     </Screen>
   );
 }

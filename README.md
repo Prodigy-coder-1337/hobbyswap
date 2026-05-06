@@ -1,6 +1,6 @@
-# HobbySwap
+# HobbiHop
 
-HobbySwap is a production-ready mobile-first PWA for Metro Manila hobbyists who want to swap skills, share materials, join low-pressure local events, and build beginner-friendly creative momentum without the clout-chasing patterns of traditional social apps.
+HobbiHop is a production-ready mobile-first PWA for Metro Manila hobbyists who want to swipe into hobby friends, workshops, item listings, and beginner-friendly creative momentum without the clout-chasing patterns of traditional social apps.
 
 ## Tech Stack
 
@@ -57,8 +57,8 @@ If you later replace the seeded services with live infrastructure, common next s
 
 ## Demo Login
 
-- Email: `mika@hobbyswap.app`
-- Password: `HobbySwap9`
+- Email: `mika@hobbihop.app`
+- Password: `HobbiHop9`
 
 ## Project Structure
 
