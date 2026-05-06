@@ -17,6 +17,8 @@
   --mauve: #dbc0b9;
   --danger: #d94848;
   --shadow: 0 22px 70px rgba(29, 29, 31, 0.14);
+  --ease-out: cubic-bezier(0.18, 0.84, 0.32, 1);
+  --ease-spring: cubic-bezier(0.2, 1.12, 0.32, 1);
 }
 
 * {
@@ -86,6 +88,7 @@ video {
 
 .phone-shell {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   background:
     radial-gradient(circle at 18% 4%, rgba(255, 90, 95, 0.16), transparent 26%),
@@ -95,6 +98,29 @@ video {
   border-left: 1px solid rgba(255, 255, 255, 0.8);
   border-right: 1px solid rgba(255, 255, 255, 0.8);
   overflow-x: clip;
+}
+
+.phone-shell::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: -120px;
+  z-index: 0;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(158, 216, 211, 0.44), transparent 58%),
+    radial-gradient(circle at 70% 70%, rgba(234, 212, 168, 0.42), transparent 42%);
+  filter: blur(2px);
+  opacity: 0.78;
+  pointer-events: none;
+  animation: auroraDrift 14s ease-in-out infinite alternate;
+}
+
+.phone-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 .phone-shell.theme-dark {
@@ -189,6 +215,7 @@ video {
   border: 1px solid rgba(158, 216, 211, 0.46);
   background: #fffdf8;
   box-shadow: 0 10px 22px rgba(36, 51, 51, 0.1);
+  animation: logoBreathe 4.6s ease-in-out infinite;
 }
 
 .brand-mark {
@@ -207,6 +234,10 @@ video {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.8);
   color: var(--text);
+  transition:
+    transform 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
 }
 
 .app-main {
@@ -217,6 +248,23 @@ video {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: screenRise 460ms var(--ease-out) both;
+}
+
+.screen > * {
+  animation: softReveal 520ms var(--ease-out) both;
+}
+
+.screen > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.screen > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.screen > *:nth-child(4) {
+  animation-delay: 170ms;
 }
 
 .screen-header,
@@ -296,6 +344,18 @@ video {
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 26px;
   box-shadow: 0 10px 28px rgba(20, 37, 36, 0.05);
+  transition:
+    transform 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out);
+}
+
+.panel:hover,
+.clean-card:hover,
+.credit-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  box-shadow: 0 16px 34px rgba(20, 37, 36, 0.09);
 }
 
 .panel,
@@ -338,6 +398,22 @@ video {
   justify-content: center;
   gap: 8px;
   cursor: pointer;
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    filter 180ms var(--ease-out);
+}
+
+.button:not(:disabled):hover,
+.icon-button:hover,
+.round-action:hover {
+  transform: translateY(-2px);
+}
+
+.button:not(:disabled):active,
+.icon-button:active,
+.round-action:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .button:disabled {
@@ -580,6 +656,18 @@ video {
 .progress-bar {
   height: 100%;
   border-radius: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: width 560ms var(--ease-out);
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: translateX(-100%);
+  animation: progressShine 2.8s ease-in-out infinite;
 }
 
 .progress-teal {
@@ -602,6 +690,7 @@ video {
   place-items: end center;
   background: rgba(13, 30, 29, 0.36);
   padding: 16px;
+  animation: fadeIn 180ms ease-out both;
 }
 
 .sheet {
@@ -612,6 +701,7 @@ video {
   background: #fffefb;
   border-radius: 28px 28px 20px 20px;
   box-shadow: var(--shadow);
+  animation: sheetLift 300ms var(--ease-spring) both;
 }
 
 .sheet-header {
@@ -637,6 +727,7 @@ video {
   background: linear-gradient(180deg, rgba(252, 246, 238, 0.78), rgba(252, 246, 238, 0.98));
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--line);
+  animation: navDock 520ms var(--ease-spring) both;
 }
 
 .bottom-nav-side {
@@ -651,6 +742,11 @@ video {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    transform 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
 }
 
 .bottom-nav-link {
@@ -666,12 +762,17 @@ video {
   color: var(--text);
 }
 
+.bottom-nav-link.active svg {
+  animation: navPop 420ms var(--ease-spring) both;
+}
+
 .bottom-nav-plus {
   width: 62px;
   height: 62px;
   color: white;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   box-shadow: 0 14px 28px rgba(191, 87, 48, 0.28);
+  animation: plusFloat 4s ease-in-out infinite;
 }
 
 .bottom-nav-plus.active {
@@ -1898,6 +1999,18 @@ video {
   transform: translateY(-2px);
 }
 
+.category-tile {
+  transition:
+    transform 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    filter 220ms var(--ease-out);
+}
+
+.category-tile:hover {
+  filter: saturate(1.08);
+  transform: translateY(-3px) scale(1.01);
+}
+
 .category-tile span {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.08rem;
@@ -1940,6 +2053,23 @@ video {
     linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(255, 255, 255, 0.54));
   border: 1px solid var(--line);
   box-shadow: 0 18px 42px rgba(36, 51, 51, 0.08);
+  overflow: hidden;
+}
+
+.single-discovery-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.28), transparent 44%);
+  transform: translateX(-120%);
+  pointer-events: none;
+  animation: discoverySweep 5.8s ease-in-out infinite;
+}
+
+.single-discovery-stage > * {
+  position: relative;
+  z-index: 1;
 }
 
 .discover-filter-bar {
@@ -1964,6 +2094,14 @@ video {
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid var(--line);
   box-shadow: 0 10px 24px rgba(36, 51, 51, 0.06);
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+
+.discover-mode-select:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(79, 170, 166, 0.18);
 }
 
 .discover-mode-select span {
@@ -2027,6 +2165,7 @@ video {
   inset: auto;
   min-height: 548px;
   transform: none;
+  animation: cardDeal 520ms var(--ease-spring) both;
 }
 
 .swipe-card.top-card {
@@ -2035,12 +2174,19 @@ video {
 
 .swipe-card.top-card:active {
   cursor: grabbing;
+  transform: scale(0.995) rotate(0.6deg);
 }
 
 .swipe-card-image {
   height: 540px;
   object-fit: cover;
   border-radius: 0;
+  transform: scale(1.02);
+  transition: transform 900ms var(--ease-out);
+}
+
+.swipe-card:hover .swipe-card-image {
+  transform: scale(1.06);
 }
 
 .person-visual {
@@ -2083,6 +2229,7 @@ video {
   gap: 10px;
   padding: 18px;
   color: white;
+  animation: copyFloatIn 620ms var(--ease-out) 120ms both;
 }
 
 .swipe-card-copy h2 {
@@ -2148,6 +2295,7 @@ video {
   font-weight: 800;
   text-transform: uppercase;
   background: rgba(255, 90, 95, 0.84);
+  animation: swipeStamp 650ms var(--ease-spring) both;
 }
 
 .swipe-actions {
@@ -2167,6 +2315,19 @@ video {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  transition:
+    transform 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    background 180ms var(--ease-out);
+}
+
+.round-action.like:hover {
+  box-shadow: 0 14px 30px rgba(255, 77, 87, 0.16);
+}
+
+.round-action.super:hover {
+  box-shadow: 0 14px 30px rgba(45, 140, 255, 0.16);
 }
 
 .round-action span {
@@ -2625,6 +2786,159 @@ video {
   background: var(--panel-strong);
 }
 
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(220px, 120px, 0) scale(1.18);
+  }
+}
+
+@keyframes logoBreathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 10px 22px rgba(36, 51, 51, 0.1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 16px 30px rgba(79, 170, 166, 0.18);
+  }
+}
+
+@keyframes screenRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheetLift {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes navDock {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes navPop {
+  0% {
+    transform: scale(0.82) rotate(-8deg);
+  }
+  70% {
+    transform: scale(1.14) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes plusFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes progressShine {
+  0%,
+  45% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+@keyframes discoverySweep {
+  0%,
+  58% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes cardDeal {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96) rotate(-1.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes copyFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes swipeStamp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(0.72);
+  }
+  42% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-5deg) scale(0.96);
+  }
+}
+
 @keyframes cardShuffle {
   0%,
   100% {
@@ -2648,6 +2962,17 @@ video {
   }
   50% {
     transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
   }
 }
 
