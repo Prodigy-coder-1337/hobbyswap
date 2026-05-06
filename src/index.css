@@ -1470,7 +1470,14 @@ video {
   position: absolute;
   inset: 0;
   z-index: 40;
-  pointer-events: none;
+  pointer-events: auto;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.phone-shell.tutorial-locked {
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .tutorial-highlight,

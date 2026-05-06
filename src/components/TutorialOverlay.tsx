@@ -1,6 +1,7 @@
 import { RefObject, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Pill } from '@/components/ui';
+import { seedData } from '@/data/seed';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -19,9 +20,17 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
     null
   );
 
+  const guideSteps = useMemo(() => {
+    const sourceSteps = tutorialSteps.length ? tutorialSteps : seedData.tutorialSteps;
+    const finalSwipeStep = seedData.tutorialSteps[seedData.tutorialSteps.length - 1];
+
+    return sourceSteps.map((entry, entryIndex) =>
+      entry.target === 'log' || entryIndex === sourceSteps.length - 1 ? finalSwipeStep : entry
+    );
+  }, [tutorialSteps]);
   const isActive = Boolean(currentUser && !currentUser.guideCompleted && location.pathname.startsWith('/app'));
-  const step = tutorialSteps[index];
-  const progress = useMemo(() => `${index + 1} / ${tutorialSteps.length}`, [index, tutorialSteps.length]);
+  const step = guideSteps[index];
+  const progress = useMemo(() => `${index + 1} / ${guideSteps.length}`, [index, guideSteps.length]);
   const stepRoute = step?.target === 'swipeDeck' ? '/app/discover' : '/app/home';
 
   useEffect(() => {
@@ -36,9 +45,41 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
     }
   }, [isActive]);
 
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    const shell = shellRef.current;
+    const scrollY = window.scrollY;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    shell?.classList.add('tutorial-locked');
+    window.scrollTo(0, 0);
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
+      shell?.classList.remove('tutorial-locked');
+      window.scrollTo(0, 0);
+    };
+  }, [isActive, shellRef]);
+
   function finishGuide() {
     completeGuide();
-    navigate('/app/discover');
+    navigate('/app/discover', { replace: true });
   }
 
   useEffect(() => {
@@ -136,7 +177,7 @@ export function TutorialOverlay({ shellRef }: TutorialOverlayProps) {
               Back
             </Button>
           ) : null}
-          {index < tutorialSteps.length - 1 ? (
+          {index < guideSteps.length - 1 ? (
             <Button onClick={() => setIndex((current) => current + 1)}>Next</Button>
           ) : (
             <Button
