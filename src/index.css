@@ -2664,6 +2664,112 @@ video {
   gap: 8px;
 }
 
+.settings-mini-heading {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settings-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.settings-mini-grid.two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-mini-toggle,
+.settings-select-pill {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--text);
+  box-shadow: 0 8px 18px rgba(20, 37, 36, 0.04);
+}
+
+.settings-mini-toggle {
+  min-height: 66px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  text-align: left;
+}
+
+.settings-mini-toggle strong,
+.settings-select-pill span {
+  font-size: 0.84rem;
+  line-height: 1.1;
+}
+
+.settings-mini-toggle span {
+  align-self: flex-start;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(36, 51, 51, 0.07);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.settings-mini-toggle.active {
+  border-color: rgba(79, 170, 166, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(158, 216, 211, 0.22), transparent 34%),
+    rgba(255, 255, 255, 0.9);
+}
+
+.settings-mini-toggle.active span {
+  color: #1f4f4d;
+  background: rgba(158, 216, 211, 0.38);
+}
+
+.settings-select-pill {
+  min-height: 46px;
+  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-select-pill span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.settings-select-pill select {
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 800;
+  text-align: right;
+}
+
+.settings-compact-grid .segments {
+  gap: 8px;
+}
+
+.settings-compact-grid .segment {
+  min-height: 38px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
 .anonymous-control-card {
   width: 100%;
   justify-content: space-between;
@@ -2754,6 +2860,8 @@ video {
 .theme-dark .anonymous-control-card,
 .theme-dark .privacy-preview-card,
 .theme-dark .privacy-preview-grid article,
+.theme-dark .settings-mini-toggle,
+.theme-dark .settings-select-pill,
 .theme-dark .quick-lanes button,
 .theme-dark .landing-lane-card,
 .theme-dark .credit-way-card,
@@ -2783,8 +2891,24 @@ video {
 .theme-dark .text-input,
 .theme-dark .composer-input,
 .theme-dark .search-field input,
-.theme-dark .discover-mode-select select {
+.theme-dark .discover-mode-select select,
+.theme-dark .settings-select-pill select {
   color: var(--text);
+}
+
+.theme-dark .settings-mini-toggle span {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .settings-mini-toggle.active {
+  background:
+    radial-gradient(circle at top right, rgba(158, 216, 211, 0.14), transparent 36%),
+    color-mix(in srgb, var(--panel-strong) 88%, transparent);
+}
+
+.theme-dark .settings-mini-toggle.active span {
+  color: var(--accent);
+  background: rgba(158, 216, 211, 0.14);
 }
 
 .theme-dark .sheet,

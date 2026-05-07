@@ -47,9 +47,9 @@ export default function DashboardScreen() {
       .sort((a, b) => new Date(a.session.date).getTime() - new Date(b.session.date).getTime())[0];
   }, [contracts, currentUser]);
 
-  const recentThread = useMemo(() => {
+  const recentThreads = useMemo(() => {
     if (!currentUser) {
-      return null;
+      return [];
     }
 
     return threads
@@ -62,7 +62,8 @@ export default function DashboardScreen() {
           ? new Date(right.messages.at(-1)!.createdAt).getTime()
           : 0;
         return rightTime - leftTime;
-      })[0] ?? null;
+      })
+      .slice(0, 3);
   }, [threads, currentUser]);
 
   const weeklyChallenge = challenges.find((challenge) => !challenge.archived);
@@ -112,9 +113,6 @@ export default function DashboardScreen() {
     return null;
   }
 
-  const threadPartner = recentThread
-    ? users.find((user) => recentThread.participantIds.includes(user.id) && user.id !== currentUser.id)
-    : null;
   const creditsToBuy = Math.max(0, Math.floor(Number(creditAmount) || 0));
   const creditCost = creditsToBuy / 100;
 
@@ -226,22 +224,33 @@ export default function DashboardScreen() {
         </div>
       </Panel>
 
-      {threadPartner && recentThread ? (
-        <Panel eyebrow="Latest chat" title="Keep the loop warm">
-          <button
-            className="thread-row"
-            onClick={() => navigate(`/app/messages?thread=${recentThread.id}`)}
-            type="button"
-          >
-            <Avatar color={threadPartner.avatar} label={threadPartner.displayName} />
-            <div className="thread-row-main">
-              <div className="thread-row-meta">
-                <strong>{threadPartner.displayName}</strong>
-                <MessageCircle size={16} />
-              </div>
-              <p className="thread-row-preview">{recentThread.messages.at(-1)?.body ?? 'Say hello.'}</p>
-            </div>
-          </button>
+      {recentThreads.length ? (
+        <Panel eyebrow="Latest chat" title="Recent match history">
+          <div className="thread-list compact-thread-list">
+            {recentThreads.map((thread) => {
+              const threadPartner = users.find(
+                (user) => thread.participantIds.includes(user.id) && user.id !== currentUser.id
+              );
+
+              return threadPartner ? (
+                <button
+                  className="thread-row"
+                  key={thread.id}
+                  onClick={() => navigate(`/app/messages?thread=${thread.id}`)}
+                  type="button"
+                >
+                  <Avatar color={threadPartner.avatar} label={threadPartner.displayName} />
+                  <div className="thread-row-main">
+                    <div className="thread-row-meta">
+                      <strong>{threadPartner.displayName}</strong>
+                      <MessageCircle size={16} />
+                    </div>
+                    <p className="thread-row-preview">{thread.messages.at(-1)?.body ?? 'Say hello.'}</p>
+                  </div>
+                </button>
+              ) : null;
+            })}
+          </div>
         </Panel>
       ) : null}
 

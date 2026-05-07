@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EyeOff, Settings, Sparkles, Star } from 'lucide-react';
-import { Button, Field, Panel, Pill, Screen, StatsGrid, TextArea, TextInput, Toggle } from '@/components/ui';
+import { Button, Field, Panel, Pill, Screen, StatsGrid, TextArea, TextInput } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -12,7 +12,6 @@ export default function ProfileScreen() {
   const reviews = useAppStore((state) => state.reviews);
   const contracts = useAppStore((state) => state.contracts);
   const updateProfile = useAppStore((state) => state.updateProfile);
-  const updatePrivacy = useAppStore((state) => state.updatePrivacy);
   const [form, setForm] = useState({
     displayName: currentUser?.displayName ?? '',
     bio: currentUser?.bio ?? ''
@@ -138,21 +137,6 @@ export default function ProfileScreen() {
         <Link to="/app/new" state={{ mode: 'Create listing' }}>
           <Button>Show your skills</Button>
         </Link>
-      </Panel>
-
-      <Panel eyebrow="Privacy" title="Quick controls">
-        <Toggle
-          checked={currentUser.anonymousMode}
-          description="Hide your card until you Like, Join, Message, or Swap."
-          label="Anonymous Mode"
-          onChange={(value) => updateProfile({ anonymousMode: value })}
-        />
-        <Toggle
-          checked={currentUser.privacy.showOnMap}
-          description="Let nearby hobbyists discover you."
-          label="Show me nearby"
-          onChange={(value) => updatePrivacy({ showOnMap: value })}
-        />
       </Panel>
     </Screen>
   );

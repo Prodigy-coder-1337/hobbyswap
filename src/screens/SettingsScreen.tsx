@@ -1,9 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { EyeOff, Lock, Moon, Sparkles } from 'lucide-react';
-import { Button, Field, Panel, Pill, Screen, Segments, Toggle } from '@/components/ui';
+import { Button, Panel, Pill, Screen, Segments } from '@/components/ui';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { exportDataJson } from '@/services/export';
 import { useAppStore } from '@/store/useAppStore';
+
+function settingStateLabel(enabled: boolean) {
+  return enabled ? 'On' : 'Off';
+}
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
@@ -93,24 +97,35 @@ export default function SettingsScreen() {
       </Panel>
 
       <Panel eyebrow="Visibility" title="Who can find you">
-        <Toggle
-          checked={currentUser.privacy.showRealName}
-          label="Show real name"
-          onChange={(value) => updatePrivacy({ showRealName: value })}
-        />
-        <Toggle
-          checked={currentUser.privacy.showOnMap}
-          label="Show me nearby"
-          onChange={(value) => updatePrivacy({ showOnMap: value })}
-        />
-        <Toggle
-          checked={currentUser.privacy.showExactLocation}
-          label="Show barangay"
-          onChange={(value) => updatePrivacy({ showExactLocation: value })}
-        />
-        <Field label="Profile visibility">
+        <div className="settings-mini-grid">
+          <button
+            className={`settings-mini-toggle ${currentUser.privacy.showRealName ? 'active' : ''}`}
+            onClick={() => updatePrivacy({ showRealName: !currentUser.privacy.showRealName })}
+            type="button"
+          >
+            <strong>Real name</strong>
+            <span>{settingStateLabel(currentUser.privacy.showRealName)}</span>
+          </button>
+          <button
+            className={`settings-mini-toggle ${currentUser.privacy.showOnMap ? 'active' : ''}`}
+            onClick={() => updatePrivacy({ showOnMap: !currentUser.privacy.showOnMap })}
+            type="button"
+          >
+            <strong>Nearby</strong>
+            <span>{settingStateLabel(currentUser.privacy.showOnMap)}</span>
+          </button>
+          <button
+            className={`settings-mini-toggle ${currentUser.privacy.showExactLocation ? 'active' : ''}`}
+            onClick={() => updatePrivacy({ showExactLocation: !currentUser.privacy.showExactLocation })}
+            type="button"
+          >
+            <strong>Barangay</strong>
+            <span>{settingStateLabel(currentUser.privacy.showExactLocation)}</span>
+          </button>
+        </div>
+        <label className="settings-select-pill">
+          <span>Profile stack</span>
           <select
-            className="text-input"
             value={currentUser.privacy.visibility}
             onChange={(event) =>
               updatePrivacy({ visibility: event.target.value as 'Community' | 'Matches Only' | 'Private' })
@@ -120,27 +135,22 @@ export default function SettingsScreen() {
             <option value="Matches Only">Matches only</option>
             <option value="Private">Private</option>
           </select>
-        </Field>
+        </label>
       </Panel>
 
       <Panel eyebrow="App feel" title="Readable anywhere">
-        <div className="settings-promo-card">
-          <span>
-            <Moon size={20} />
-          </span>
-          <div>
-            <strong>Dark mode</strong>
-            <p>Image-first and easy on the eyes.</p>
-          </div>
+        <div className="settings-mini-heading">
+          <Moon size={16} />
+          <span>Theme</span>
         </div>
         <Segments
           value={currentUser.accessibility.theme ?? 'Light'}
           options={['Light', 'Dark', 'System']}
           onChange={(value) => updateAccessibility({ theme: value as 'Light' | 'Dark' | 'System' })}
         />
-        <Field label="Font size">
+        <label className="settings-select-pill">
+          <span>Font</span>
           <select
-            className="text-input"
             value={currentUser.accessibility.fontScale}
             onChange={(event) =>
               updateAccessibility({ fontScale: event.target.value as 'Default' | 'Large' | 'Largest' })
@@ -150,35 +160,60 @@ export default function SettingsScreen() {
             <option value="Large">Large</option>
             <option value="Largest">Largest</option>
           </select>
-        </Field>
-        <Toggle
-          checked={currentUser.accessibility.reduceMotion}
-          label="Reduce motion"
-          onChange={(value) => updateAccessibility({ reduceMotion: value })}
-        />
-        <Toggle
-          checked={currentUser.accessibility.highContrast}
-          label="High contrast"
-          onChange={(value) => updateAccessibility({ highContrast: value })}
-        />
+        </label>
+        <div className="settings-mini-grid two-up">
+          <button
+            className={`settings-mini-toggle ${currentUser.accessibility.reduceMotion ? 'active' : ''}`}
+            onClick={() => updateAccessibility({ reduceMotion: !currentUser.accessibility.reduceMotion })}
+            type="button"
+          >
+            <strong>Motion</strong>
+            <span>{currentUser.accessibility.reduceMotion ? 'Reduced' : 'Lively'}</span>
+          </button>
+          <button
+            className={`settings-mini-toggle ${currentUser.accessibility.highContrast ? 'active' : ''}`}
+            onClick={() => updateAccessibility({ highContrast: !currentUser.accessibility.highContrast })}
+            type="button"
+          >
+            <strong>Contrast</strong>
+            <span>{settingStateLabel(currentUser.accessibility.highContrast)}</span>
+          </button>
+        </div>
       </Panel>
 
       <Panel eyebrow="Notifications" title="Only useful nudges">
-        <Toggle
-          checked={currentUser.notificationPreferences.messages}
-          label="Messages"
-          onChange={(value) => updateNotificationPrefs({ messages: value })}
-        />
-        <Toggle
-          checked={currentUser.notificationPreferences.eventReminders}
-          label="Workshop reminders"
-          onChange={(value) => updateNotificationPrefs({ eventReminders: value })}
-        />
-        <Toggle
-          checked={currentUser.notificationPreferences.challengeReminders}
-          label="Credit missions"
-          onChange={(value) => updateNotificationPrefs({ challengeReminders: value })}
-        />
+        <div className="settings-mini-grid">
+          <button
+            className={`settings-mini-toggle ${currentUser.notificationPreferences.messages ? 'active' : ''}`}
+            onClick={() => updateNotificationPrefs({ messages: !currentUser.notificationPreferences.messages })}
+            type="button"
+          >
+            <strong>Messages</strong>
+            <span>{settingStateLabel(currentUser.notificationPreferences.messages)}</span>
+          </button>
+          <button
+            className={`settings-mini-toggle ${currentUser.notificationPreferences.eventReminders ? 'active' : ''}`}
+            onClick={() =>
+              updateNotificationPrefs({ eventReminders: !currentUser.notificationPreferences.eventReminders })
+            }
+            type="button"
+          >
+            <strong>Workshops</strong>
+            <span>{settingStateLabel(currentUser.notificationPreferences.eventReminders)}</span>
+          </button>
+          <button
+            className={`settings-mini-toggle ${currentUser.notificationPreferences.challengeReminders ? 'active' : ''}`}
+            onClick={() =>
+              updateNotificationPrefs({
+                challengeReminders: !currentUser.notificationPreferences.challengeReminders
+              })
+            }
+            type="button"
+          >
+            <strong>Credits</strong>
+            <span>{settingStateLabel(currentUser.notificationPreferences.challengeReminders)}</span>
+          </button>
+        </div>
       </Panel>
 
       <Panel eyebrow="Trust" title="Verify when ready">

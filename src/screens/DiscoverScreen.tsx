@@ -71,6 +71,7 @@ export default function DiscoverScreen() {
   const listings = useAppStore((state) => state.listings);
   const saveListingForLater = useAppStore((state) => state.saveListingForLater);
   const startConversation = useAppStore((state) => state.startConversation);
+  const sendMessage = useAppStore((state) => state.sendMessage);
   const [mode, setMode] = useState<DiscoverMode>('people');
   const [cardIndex, setCardIndex] = useState(0);
   const [flash, setFlash] = useState('');
@@ -182,6 +183,29 @@ export default function DiscoverScreen() {
     advance('Saved');
   }
 
+  function matchMessage(card: DiscoveryCard, action: 'Liked' | 'Super liked') {
+    if (card.type === 'person') {
+      return `${action} your profile on HobbiHop. Want to talk about ${card.chips[0]}?`;
+    }
+
+    if (card.listing.intent === 'workshop') {
+      return `${action} your workshop: ${card.title}. Can you share the next available slot?`;
+    }
+
+    return `${action} your listing: ${card.title}. Is it open to chat or swap?`;
+  }
+
+  function handleMatch(card: DiscoveryCard, action: 'Liked' | 'Super liked') {
+    const partnerId = card.type === 'person' ? card.user.id : card.listing.ownerId;
+    const threadId = startConversation(partnerId);
+
+    if (threadId) {
+      sendMessage(threadId, matchMessage(card, action));
+    }
+
+    advance(action);
+  }
+
   function handlePrimary(card: DiscoveryCard) {
     if (card.type === 'person') {
       const threadId = startConversation(card.user.id);
@@ -217,12 +241,17 @@ export default function DiscoverScreen() {
     }
 
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      advance(deltaX > 0 ? 'Liked' : 'Skipped');
+      if (deltaX > 0) {
+        handleMatch(card, 'Liked');
+        return;
+      }
+
+      advance('Skipped');
       return;
     }
 
     if (deltaY < 0) {
-      advance('Super liked');
+      handleMatch(card, 'Super liked');
       return;
     }
 
@@ -302,11 +331,11 @@ export default function DiscoverScreen() {
               <Bookmark size={22} />
               <span>Save</span>
             </button>
-            <button className="round-action super" onClick={() => advance('Super liked')} type="button">
+            <button className="round-action super" onClick={() => handleMatch(activeCard, 'Super liked')} type="button">
               <Star size={22} />
               <span>Super</span>
             </button>
-            <button className="round-action like" onClick={() => advance('Liked')} type="button">
+            <button className="round-action like" onClick={() => handleMatch(activeCard, 'Liked')} type="button">
               <Heart size={22} />
               <span>Like</span>
             </button>
